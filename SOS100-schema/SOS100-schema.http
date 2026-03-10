@@ -1,0 +1,6 @@
+@SOS100_schema_HostAddress = http://localhost:5184
+
+GET {{SOS100_schema_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,6 @@
+@SOS100_Kurser_HostAddress = http://localhost:5027
+
+GET {{SOS100_Kurser_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
