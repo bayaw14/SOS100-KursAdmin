@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
+
 <body>
 
 @{
@@ -106,6 +107,41 @@ else
 {
     @RenderBody()
 }
+<!-- Cookie Banner -->
+<div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-content">
+        <div class="cookie-text">
+            <strong>Denna webbplats använder cookies</strong>
+            <p>EduAdmin använder cookies för att säkerställa att du får den bästa upplevelsen. 
+                Nödvändiga cookies krävs för att systemet ska fungera, inklusive inloggning och session.</p>
+        </div>
+        <div class="cookie-actions">
+            <button onclick="acceptCookies()" class="cookie-btn-accept">Tillåt alla</button>
+            <button onclick="acceptNecessary()" class="cookie-btn-necessary">Endast nödvändiga</button>
+            <button onclick="denyCookies()" class="cookie-btn-deny">Avvisa</button>
+        </div>
+        <div class="cookie-toggles">
+            <div class="cookie-toggle-item">
+                <span>Nödvändig</span>
+                <div class="toggle-on">PÅ</div>
+            </div>
+            <div class="cookie-toggle-item">
+                <span>Inställningar</span>
+                <label class="toggle">
+                    <input type="checkbox" id="settings-cookie" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="cookie-toggle-item">
+                <span>Statistik</span>
+                <label class="toggle">
+                    <input type="checkbox" id="stats-cookie" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
