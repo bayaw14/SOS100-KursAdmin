@@ -1,0 +1,228 @@
+@model List<SOS100_KursAdmin_MVC.Models.UserDTO>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Hantera användare";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="success-alert">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="error-alert">@TempData["Error"]</div>
+}
+
+<div class="page-header">
+    <div>
+        <h2 style="margin-bottom:4px;">Användare</h2>
+        
+    </div>
+    <button class="dash-btn" onclick="openModal('create-modal')">+ Hantera användare</button>
+</div>
+
+<!-- Användarlista -->
+<div class="card" style="padding:0; overflow:hidden;">
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left; padding:12px 20px; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:var(--muted);">Namn</th>
+                <th style="text-align:left; padding:12px 20px; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:var(--muted);">Email</th>
+                <th style="text-align:left; padding:12px 20px; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:var(--muted);">Personnummer</th>
+                <th style="text-align:left; padding:12px 20px; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:var(--muted);">Roll</th>
+                <th style="padding:12px 20px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:13px 20px; font-weight:500;">@user.FullName</td>
+                    <td style="padding:13px 20px; color:var(--muted); font-size:13px;">@user.Email</td>
+                    <td style="padding:13px 20px; color:var(--muted); font-size:13px;">@user.PersonNumber</td>
+                    <td style="padding:13px 20px;">
+                        <span class="dash-badge @(user.Role == "Admin" ? "green" : user.Role == "Teacher" ? "blue" : "gray")">
+                            @(user.Role == "Admin" ? "Administratör" : user.Role == "Teacher" ? "Lärare" : "Student")
+                        </span>
+                    </td>
+                    <td style="padding:13px 20px; text-align:right;">
+                        <div style="display:flex; gap:8px; justify-content:flex-end;">
+                            <button class="dash-btn"
+                                    style="background:transparent; color:var(--text); border:1px solid var(--border); font-size:13px;"
+                                    onclick="openEditModal('@user.Id','@user.FirstName','@user.LastName','@user.PersonNumber','@user.Email','@user.Role')">
+                                Redigera
+                            </button>
+                            <form asp-controller="Inloggning" asp-action="DeleteUser" method="post"
+                                  onsubmit="return confirm('Är du säker på att du vill ta bort @user.FullName?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="dash-btn"
+                                        style="background:rgba(192,57,43,0.10); color:#c0392b; border:none; font-size:13px;">
+                                    Ta bort
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Skapa modal -->
+<div id="create-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:32px; width:100%; max-width:500px; margin:24px; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+            <h3>Skapa användare</h3>
+            <button onclick="closeModal('create-modal')"
+                    style="background:none; border:none; cursor:pointer; font-size:22px; color:var(--muted);">×</button>
+        </div>
+        <form asp-controller="Inloggning" asp-action="CreateUser" method="post">
+            @Html.AntiForgeryToken()
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-group">
+                    <label>Förnamn</label>
+                    <div class="input-wrap">
+                        <input type="text" name="firstName" placeholder="Anna" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Efternamn</label>
+                    <div class="input-wrap">
+                        <input type="text" name="lastName" placeholder="Andersson" required />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Personnummer</label>
+                <div class="input-wrap">
+                    <input type="text" name="personNumber" placeholder="ÅÅMMDD-XXXX" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>E-post</label>
+                <div class="input-wrap">
+                    <input type="email" name="email" placeholder="exempel@skola.se" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Lösenord</label>
+                <div class="input-wrap">
+                    <input type="password" name="password" placeholder="Min. 6 tecken" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Roll</label>
+                <div class="input-wrap">
+                    <select name="role">
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Lärare</option>
+                        <option value="Admin">Administratör</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                <button type="button" onclick="closeModal('create-modal')"
+                        style="padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif;">
+                    Avbryt
+                </button>
+                <button type="submit" class="dash-btn">Skapa</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Redigera modal -->
+<div id="edit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:32px; width:100%; max-width:500px; margin:24px; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+            <h3>Redigera användare</h3>
+            <button onclick="closeModal('edit-modal')"
+                    style="background:none; border:none; cursor:pointer; font-size:22px; color:var(--muted);">×</button>
+        </div>
+        <form asp-controller="Inloggning" asp-action="UpdateUser" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="edit-id" />
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-group">
+                    <label>Förnamn</label>
+                    <div class="input-wrap">
+                        <input type="text" name="firstName" id="edit-firstName" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Efternamn</label>
+                    <div class="input-wrap">
+                        <input type="text" name="lastName" id="edit-lastName" required />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Personnummer</label>
+                <div class="input-wrap">
+                    <input type="text" name="personNumber" id="edit-personNumber" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>E-post</label>
+                <div class="input-wrap">
+                    <input type="email" name="email" id="edit-email" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nytt lösenord <span style="color:var(--muted); font-weight:400;">(lämna tomt för att behålla)</span></label>
+                <div class="input-wrap">
+                    <input type="password" name="password" placeholder="••••••••" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Roll</label>
+                <div class="input-wrap">
+                    <select name="role" id="edit-role">
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Lärare</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                <button type="button" onclick="closeModal('edit-modal')"
+                        style="padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif;">
+                    Avbryt
+                </button>
+                <button type="submit" class="dash-btn">Spara</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openModal(id) {
+        var el = document.getElementById(id);
+        el.style.display = 'flex';
+    }
+
+    function closeModal(id) {
+        var el = document.getElementById(id);
+        el.style.display = 'none';
+    }
+
+    function openEditModal(id, firstName, lastName, personNumber, email, role) {
+        document.getElementById('edit-id').value           = id;
+        document.getElementById('edit-firstName').value    = firstName;
+        document.getElementById('edit-lastName').value     = lastName;
+        document.getElementById('edit-personNumber').value = personNumber;
+        document.getElementById('edit-email').value        = email;
+        document.getElementById('edit-role').value         = role;
+        openModal('edit-modal');
+    }
+
+    document.getElementById('create-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('create-modal');
+    });
+
+    document.getElementById('edit-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('edit-modal');
+    });
+</script>
+}

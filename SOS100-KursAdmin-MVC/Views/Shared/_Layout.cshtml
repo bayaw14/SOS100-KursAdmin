@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-
 <body>
 
 @{
@@ -19,7 +18,6 @@
 
 @if (!string.IsNullOrEmpty(token))
 {
-    <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
@@ -46,11 +44,103 @@
                     Dashboard
                 </a>
             </li>
+
+            @* ── ÄNDRAT: Student-meny tillagd ── *@
+            @if (role == "Student")
+            {
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                        </svg>
+                        Kursutbud
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                        </svg>
+                        Mina kurser
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Schema
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                        </svg>
+                        Kommunikation
+                    </a>
+                </li>
+            }
+
+            @* ── ÄNDRAT: Lärar-meny tillagd ── *@
+            @if (role == "Teacher")
+            {
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                        </svg>
+                        Mina kurser
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Schema
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                        </svg>
+                        Kommunikation
+                    </a>
+                </li>
+            }
+
+            @* ── OFÖRÄNDRAT: Admin-meny ── *@
             @if (role == "Admin")
             {
                 <li class="nav-label">Admin</li>
                 <li>
-                    <a href="#" class="nav-item">
+                    <a asp-controller="Inloggning" asp-action="Users"
+                       class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Inloggning" && ViewContext.RouteData.Values["action"]?.ToString() == "Users" ? "active" : "")">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                              stroke="currentColor" stroke-width="2"
                              stroke-linecap="round" stroke-linejoin="round">
@@ -61,8 +151,23 @@
                     </a>
                 </li>
             }
+
+            @* ── ÄNDRAT: Ändra lösenord tillagd för alla roller ── *@
+            <li>
+                <a asp-controller="Inloggning" asp-action="ChangePassword"
+                   class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "ChangePassword" ? "active" : "")">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Ändra lösenord
+                </a>
+            </li>
         </ul>
 
+        @* ── OFÖRÄNDRAT: Sidebar footer ── *@
         <div class="sidebar-footer">
             <div class="user-pill">
                 <div class="user-avatar">@(name.Length > 0 ? name[0].ToString().ToUpper() : "U")</div>
@@ -107,13 +212,14 @@ else
 {
     @RenderBody()
 }
+
 <!-- Cookie Banner -->
 <div id="cookie-banner" class="cookie-banner">
     <div class="cookie-content">
         <div class="cookie-text">
             <strong>Denna webbplats använder cookies</strong>
-            <p>EduAdmin använder cookies för att säkerställa att du får den bästa upplevelsen. 
-                Nödvändiga cookies krävs för att systemet ska fungera, inklusive inloggning och session.</p>
+            <p>EduAdmin använder cookies för att säkerställa att du får den bästa upplevelsen.
+               Nödvändiga cookies krävs för att systemet ska fungera, inklusive inloggning och session.</p>
         </div>
         <div class="cookie-actions">
             <button onclick="acceptCookies()" class="cookie-btn-accept">Tillåt alla</button>
