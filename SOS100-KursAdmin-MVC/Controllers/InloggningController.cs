@@ -24,6 +24,8 @@ public class InloggningController : Controller
         if (!string.IsNullOrEmpty(token))
             client.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        client.DefaultRequestHeaders.Add("X-Api-Key", _config["ApiKey"] ?? "MIN_HEMLIGA_API_NYCKEL_12345");
+
         return client;
     }
 
@@ -159,4 +161,31 @@ public class InloggningController : Controller
 
         return RedirectToAction("Users");
     }
+    // GET /Inloggning/ChangePassword
+    [HttpGet]
+    public IActionResult ChangePassword()
+    {
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Index");
+        return View();
+    }
+
+// POST /Inloggning/ChangePassword
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
+    {
+        var client   = ApiClient();
+        var body     = JsonSerializer.Serialize(new { currentPassword, newPassword });
+        var response = await client.PostAsync("/api/auth/change-password",
+            new StringContent(body, Encoding.UTF8, "application/json"));
+
+        TempData[response.IsSuccessStatusCode ? "Success" : "Error"] =
+            response.IsSuccessStatusCode ? "Lösenord ändrat!" : "Fel nuvarande lösenord.";
+
+        if (response.IsSuccessStatusCode)
+            return RedirectToAction("Index", "Home");
+
+        return RedirectToAction("ChangePassword");    }
 }

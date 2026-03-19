@@ -62,9 +62,9 @@ app.MapOpenApi();
 
 // UseHttpsRedirection borttagen — backend körs på http lokalt
 app.UseCors("AllowMVC");
+app.UseMiddleware<SOS100_Inloggning.Middleware.ApiKeyMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
