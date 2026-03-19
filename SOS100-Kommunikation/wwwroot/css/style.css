@@ -1,0 +1,559 @@
+/* Globala stylingregler */
+:root {
+    /* Vårt grönaktiga tema från skissen */
+    --primary-color: #2e7d32; /* Mörkgrön, används för text och ikoner när aktiverad */
+    --primary-light: #e8f5e9; /* Ljusgrön, för den "glassiga" bakgrundseffekten */
+    
+    /* Text och bakgrunder */
+    --text-main: #333333;
+    --text-muted: #8d959f;
+    --bg-main: #f4f6f8; /* En trevlig mjuk grå ton för resten av webbplatsen */
+    --bg-sidebar: #ffffff; /* Sidobaren är krispigt vit */
+    
+    /* Fel/varning (utloggning) */
+    --danger: #d32f2f;
+    
+    /* Ramar (borders) */
+    --border-color: #f0f0f0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    /* En modern font för att uppnå wow-effekten */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-container {
+    display: flex;
+    width: 100%;
+}
+
+/* =========================================
+   Sidobaren (Sidebar) 
+   ========================================= */
+.sidebar {
+    width: 280px;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 30px 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02); /* Mycket subtil skugga */
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    margin-bottom: 40px;
+    color: var(--primary-color);
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 32px;
+}
+
+.logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* Navigeringslänkar */
+.sidebar-nav {
+    flex: 1; /* Gör så att mitten tar det utrymme som finns */
+    padding: 0 16px;
+}
+
+.nav-list {
+    list-style: none;
+}
+
+.nav-item {
+    margin-bottom: 8px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 12px; /* Rundare hörn ger ett modernare utseende */
+    font-size: 15px;
+    font-weight: 500;
+    gap: 16px;
+    transition: all 0.2s ease-in-out; /* Mjuka mikros-animationer */
+}
+
+.nav-link i {
+    font-size: 22px;
+    transition: transform 0.2s ease;
+}
+
+/* Snygg hover-effekt för länkar som inte är aktiva */
+.nav-link:hover {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+.nav-link:hover i {
+    transform: scale(1.1); /* En liten detalj som gör mycket för känslan */
+}
+
+/* Stilen för vår just nu aktiva meny */
+.nav-item.active .nav-link {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Användarprofil (botten) */
+.sidebar-footer {
+    padding: 0 32px;
+    margin-top: auto; /* Trycker alltid nedåt */
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.avatar {
+    width: 44px;
+    height: 44px;
+    background-color: #f0f4f8;
+    color: var(--text-main);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-main);
+}
+
+.user-role {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--danger);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.logout-btn:hover {
+    opacity: 0.8;
+    transform: translateX(4px); /* Flyttar texten lite mjukt framåt */
+}
+
+.logout-btn i {
+    font-size: 20px;
+}
+
+/* =========================================
+   Huvudinnehållet (Kommunikation Chatt-vy)
+   ========================================= */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-container {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    height: calc(100vh - 60px);
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+/* --- Vänstra panelen i chatten (Lista) --- */
+.chat-sidebar {
+    width: 340px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 16px;
+}
+
+.chat-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.new-chat-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: none;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.new-chat-btn i {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.new-chat-btn:hover {
+    background-color: #dcedc8;
+}
+
+.search-container {
+    padding: 0 24px 24px;
+    position: relative;
+}
+
+.search-container i.ph-magnifying-glass {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%) translateY(-12px);
+    color: var(--text-muted);
+    font-size: 18px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 10px 16px 10px 42px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    font-size: 14px;
+    color: var(--text-main);
+    background-color: #ffffff;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.search-container input:focus {
+    border-color: var(--primary-color);
+}
+
+.contact-section {
+    padding: 0 16px;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    padding: 0 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.badge {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.contact-item:hover {
+    background-color: #f9fafb;
+}
+
+.contact-item.active {
+    background-color: #f0fcf2;
+    border-color: #dcedc8;
+}
+
+.contact-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.contact-avatar.light-green {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.contact-avatar.solid-green {
+    background-color: #3b8e40; /* Något mörkare solid grön som i profilbilden */
+    color: #ffffff;
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background-color: #4caf50;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+.contact-item.active .status-dot {
+    border-color: #f0fcf2;
+}
+
+.role-icon {
+    font-size: 12px;
+    margin-right: 2px;
+}
+
+.contact-info {
+    margin-left: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.contact-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.contact-role {
+    font-size: 12px;
+    color: #888;
+}
+
+/* --- Högra panelen (Meddelanden) --- */
+.chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+}
+
+.chat-window-header {
+    display: flex;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-header-info {
+    margin-left: 16px;
+}
+
+.chat-header-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+}
+
+.chat-header-status {
+    font-size: 11px;
+    font-weight: 600;
+    color: #b0bec5;
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chat-header-status .status-dot-inline {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #4caf50;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    max-width: 65%;
+}
+
+.message.outgoing {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.message-meta {
+    font-size: 10px;
+    color: #b0bec5;
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.message-bubble {
+    padding: 14px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.message.outgoing .message-bubble {
+    background-color: #3b8e40;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-input-area {
+    padding: 24px 32px;
+    border-top: 1px solid var(--border-color);
+    background-color: #ffffff;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background-color: #ffffff;
+    padding: 8px 16px;
+    transition: border-color 0.2s;
+}
+
+.input-wrapper:focus-within {
+    border-color: #ccc;
+}
+
+.input-wrapper textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    height: 40px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-main);
+    outline: none;
+    padding-top: 10px;
+}
+
+.input-wrapper textarea::placeholder {
+    color: #adb5bd;
+}
+
+.scroll-arrows {
+    display: flex;
+    flex-direction: column;
+    color: #d0d0d0;
+    font-size: 10px;
+    margin: 0 10px;
+}
+
+.scroll-arrows i {
+    cursor: pointer;
+}
+
+.send-btn {
+    background: transparent;
+    border: none;
+    color: #b0bec5;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.send-btn:hover {
+    color: var(--primary-color);
+}
+
+.input-help {
+    font-size: 11px;
+    color: #adb5bd;
+    margin-top: 12px;
+    padding-left: 4px;
+}

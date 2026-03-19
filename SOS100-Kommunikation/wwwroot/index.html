@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduAdmin - Kommunikation</title>
+    <!-- Modern teckensnitt via Google Fonts för ett "premium" utseende -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor icons för stilrena och moderna ikoner -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Länk till vår egen CSS-fil -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Vår snygga sidobar (Sidebar) börjar här -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="ph ph-graduation-cap logo-icon"></i>
+                <span class="logo-text">EduAdmin</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-squares-four"></i>
+                            <span>Översikt</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <span>Kursutbud</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-book-open"></i>
+                            <span>Mina kurser</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-calendar-blank"></i>
+                            <span>Schema</span>
+                        </a>
+                    </li>
+                    <!-- Denna är aktiv och visar vår vackra gröna markeringsfärg -->
+                    <li class="nav-item active">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-chat-circle"></i>
+                            <span>Kommunikation</span>
+                        </a>
+                    </li>
+                   
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <!-- En liten snygg avatar -->
+                    <div class="avatar">A</div>
+                    <div class="user-info">
+                        <span class="user-name">Admin</span>
+                        <span class="user-role">Admin</span>
+                    </div>
+                </div>
+                <!-- Vår rödmarkerade utloggningsknapp -->
+                <a href="#" class="logout-btn">
+                    <i class="ph ph-sign-out"></i>
+                    <span>Logga ut</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Huvudinnehållet (Chatt-vyn) -->
+        <main class="main-content">
+            <div class="chat-container">
+                <!-- Vänstra panelen: Kontaktlista och sök -->
+                <div class="chat-sidebar">
+                    <div class="chat-header">
+                        <h2>Kommunikation</h2>
+                        <button class="new-chat-btn">
+                            <i class="ph ph-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="search-container">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="user-search-input" placeholder="Sök..." value="">
+                    </div>
+
+                    <!-- Denna sektion är dold från början (display: none) -->
+                    <div class="contact-section" id="search-results-section" style="display: none;">
+                        <div class="section-title">Sökresultat</div>
+                        <div class="contact-list">
+                            <!-- Tomt initialt, fylls på dynamiskt via API -->
+                        </div>
+                    </div>
+
+                    <div class="contact-section" style="margin-top: 20px;">
+                        <div class="section-title">
+                            <span>Direktmeddelanden</span>
+                        </div>
+                        <div class="contact-list">
+                            <!-- Tomt initialt, visas när chattar laddats från API -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Högra panelen: Meddelanden -->
+                <div class="chat-window">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); background-color: #fcfcfc;">
+                        <div style="width: 80px; height: 80px; background-color: var(--primary-light); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                            <i class="ph ph-chats" style="font-size: 40px;"></i>
+                        </div>
+                        <h3 style="color: var(--text-main); font-size: 18px; margin-bottom: 8px; font-weight: 600;">Dina meddelanden</h3>
+                        <p style="font-size: 14px; text-align: center; max-width: 280px; color: var(--text-muted); line-height: 1.5;">Välj en konversation i listan eller sök efter en användare att chatta med.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Skript för att hantera sökfältets beteende -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('user-search-input');
+            const searchResultsSection = document.getElementById('search-results-section');
+            
+            // Lyssna på när användaren skriver i sökfältet
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                
+                // Om sökfältet har text (längre än 0), visa Sökresultat-sektionen. Annars dölj den.
+                if (query.length > 0) {
+                    searchResultsSection.style.display = 'block';
+                } else {
+                    searchResultsSection.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
