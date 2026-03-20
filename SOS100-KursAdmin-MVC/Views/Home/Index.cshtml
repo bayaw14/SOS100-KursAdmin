@@ -1,8 +1,57 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model SOS100_KursAdmin_MVC.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Välkomstbanner -->
+<div class="welcome-banner">
+    <div class="welcome-text">
+        <h2>Välkommen tillbaka</h2>
+        <p>@Model.UserName</p>
+    </div>
+    <span class="role-badge role-@Model.UserRole.ToLower()">
+        @(Model.UserRole == "Admin" ? "Administratör" :
+          Model.UserRole == "Teacher" ? "Lärare" : "Student")
+    </span>
+</div>
+
+<div class="dashboard-grid">
+
+    @if (Model.UserRole == "Admin" || Model.UserRole == "Teacher")
+    {
+        <div class="dash-card">
+            <div class="dash-card-icon green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">Hantera kurser</div>
+                <div class="dash-card-desc">Lägg till och hantera kurser</div>
+            </div>
+            <a asp-controller="Kurser" asp-action="Skapa" class="dash-btn">Hantera</a>
+        </div>
+    }
+    else
+    {
+        <div class="dash-card">
+            <div class="dash-card-icon green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                </svg>
+            </div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">Mina kurser</div>
+                <div class="dash-card-desc">Se dina kurser</div>
+            </div>
+            <span class="dash-badge gray">Kurser API</span>
+        </div>
+    }
+
 </div>
