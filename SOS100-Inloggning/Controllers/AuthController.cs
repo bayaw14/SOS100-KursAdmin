@@ -71,5 +71,33 @@ public class AuthController : ControllerBase
         });
         
     }
+    // POST /api/auth/enroll
+    [Authorize]
+    [HttpPost("enroll")]
+    public IActionResult Enroll(EnrollDTO dto)
+    {
+        var result = _authService.EnrollUser(dto);
+        return Ok(result);
+    }
+
+    // GET /api/auth/enrollments/{userId}
+    [Authorize]
+    [HttpGet("enrollments/{userId}")]
+    public IActionResult GetEnrollments(Guid userId)
+    {
+        var result = _authService.GetEnrollments(userId);
+        return Ok(result);
+    }
+    // POST /api/auth/change-password
+    [Authorize]
+    [HttpPost("change-password")]
+    public IActionResult ChangePassword(ChangePasswordDTO dto)
+    {
+        var email  = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        var result = _authService.ChangePassword(email!, dto);
+
+        if (result == null) return BadRequest("Fel nuvarande lösenord");
+        return Ok(result);
+    }  
 }
 

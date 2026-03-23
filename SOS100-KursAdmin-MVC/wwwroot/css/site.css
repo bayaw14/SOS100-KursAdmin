@@ -320,3 +320,23 @@ h1,h2,h3 { font-family: 'Syne', sans-serif; font-weight: 700; }
 }
 .toggle input:checked + .toggle-slider { background: var(--green); }
 .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+.sidebar-footer {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.logout-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: opacity .14s;
+}
+.logout-text:hover { opacity: 0.8; text-decoration: none; }

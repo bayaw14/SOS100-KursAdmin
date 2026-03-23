@@ -15,10 +15,8 @@
     </span>
 </div>
 
-<!-- Kort-grid -->
 <div class="dashboard-grid">
 
-    <!-- Mina kurser -->
     @if (Model.UserRole == "Admin" || Model.UserRole == "Teacher")
     {
         <div class="dash-card">
@@ -31,10 +29,10 @@
                 </svg>
             </div>
             <div class="dash-card-body">
-                <div class="dash-card-title">Skapa kurser</div>
+                <div class="dash-card-title">Hantera kurser</div>
                 <div class="dash-card-desc">Lägg till och hantera kurser</div>
             </div>
-            <a asp-controller="Kurser" asp-action="Skapa" class="dash-btn">Skapa</a>
+            <a asp-controller="Kurser" asp-action="Skapa" class="dash-btn">Hantera</a>
         </div>
     }
     else
@@ -50,50 +48,10 @@
             </div>
             <div class="dash-card-body">
                 <div class="dash-card-title">Mina kurser</div>
-                <div class="dash-card-desc">Se dina registrerade kurser</div>
+                <div class="dash-card-desc">Se dina kurser</div>
             </div>
-            <span class="dash-badge gray">Integreras av kurs-teamet</span>
-            </div>
-    }
-
-    <!-- Hantera användare – visas bara för Admin -->
-    @if (Model.UserRole == "Admin")
-    {
-        <div class="dash-card">
-            <div class="dash-card-icon blue">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 010 7.75"/>
-                </svg>
-            </div>
-            <div class="dash-card-body">
-                <div class="dash-card-title">Hantera användare</div>
-                <div class="dash-card-desc">Skapa Student- och Lärarkonton</div>
-            </div>
-            <a asp-controller="Inloggning" asp-action="Users" class="dash-btn">Hantera</a>
+            <span class="dash-badge gray">Kurser API</span>
         </div>
     }
-
-    <!-- Logga ut -->
-    <div class="dash-card">
-        <div class="dash-card-icon red">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-        </div>
-        <div class="dash-card-body">
-            <div class="dash-card-title">Logga ut</div>
-            <div class="dash-card-desc">Avsluta din session</div>
-        </div>
-        <a asp-controller="Inloggning" asp-action="Logout" class="dash-btn red">Logga ut</a>
-    </div>
 
 </div>

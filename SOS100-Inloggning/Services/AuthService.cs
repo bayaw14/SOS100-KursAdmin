@@ -94,4 +94,40 @@ public class AuthService
 
         return user;
     }
+    public string EnrollUser(EnrollDTO dto)
+    {
+        var exists = _context.Enrollments
+            .Any(e => e.UserId == dto.UserId && e.CourseId == dto.CourseId);
+
+        if (exists) return "Already enrolled";
+
+        _context.Enrollments.Add(new Enrollment
+        {
+            Id       = Guid.NewGuid(),
+            UserId   = dto.UserId,
+            CourseId = dto.CourseId
+        });
+        _context.SaveChanges();
+        return "Enrolled successfully";
+    }
+
+    public List<Enrollment> GetEnrollments(Guid userId)
+    {
+        return _context.Enrollments
+            .Where(e => e.UserId == userId)
+            .ToList();
+    }
+    public string? ChangePassword(string email, ChangePasswordDTO dto)
+    {
+        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        if (user == null) return null;
+
+        bool valid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+        if (!valid) return null;
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        _context.SaveChanges();
+
+        return "Lösenord uppdaterat";
+    }
 }
