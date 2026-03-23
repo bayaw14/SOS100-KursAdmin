@@ -1,7 +1,7 @@
 /* Globala stylingregler */
 :root {
     /* Vårt grönaktiga tema från skissen */
-    --primary-color: #2e7d32; /* Mörkgrön, används för text och ikoner när aktiverad */
+    --primary-color: #2E7D4F; /* Grön färg hämtad från inloggningen */
     --primary-light: #e8f5e9; /* Ljusgrön, för den "glassiga" bakgrundseffekten */
     
     /* Text och bakgrunder */
@@ -168,7 +168,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: rgba(255, 255, 255, 0.8);
+    color: #eb5757;
     text-decoration: none;
     font-weight: 500;
     font-size: 14px;
