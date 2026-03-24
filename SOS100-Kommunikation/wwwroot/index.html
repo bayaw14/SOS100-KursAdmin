@@ -45,6 +45,14 @@
             localStorage.removeItem('JwtToken');
             window.location.href = mvcBaseUrl + "/Inloggning/Logout";
         }
+
+        window.goToAdministration = function() {
+            window.location.href = mvcBaseUrl + "/Inloggning/Users";
+        }
+        
+        window.goToChangePassword = function() {
+            window.location.href = mvcBaseUrl + "/Inloggning/ChangePassword";
+        }
     </script>
 </head>
 <body>
@@ -58,7 +66,6 @@
             
             <nav class="sidebar-nav">
                 <ul class="nav-list">
-                    <!-- Navigationslänkar -->
                     <li class="nav-item">
                         <a href="javascript:void(0);" onclick="goBackToDashboard()" class="nav-link">
                             <i class="ph ph-house"></i>
@@ -71,13 +78,13 @@
                             <span>Kursutbud</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="nav-mina-kurser">
                         <a href="#" class="nav-link">
                             <i class="ph ph-calendar-blank"></i>
                             <span>Mina kurser</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="nav-schema">
                         <a href="#" class="nav-link">
                             <i class="ph ph-clock"></i>
                             <span>Schema</span>
@@ -89,8 +96,14 @@
                             <span>Kommunikation</span>
                         </a>
                     </li>
+                    <li class="nav-item" id="nav-admin" style="display: none;">
+                        <a href="javascript:void(0);" onclick="goToAdministration()" class="nav-link">
+                            <i class="ph ph-users"></i>
+                            <span>Administration</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="javascript:void(0);" onclick="goToChangePassword()" class="nav-link">
                             <i class="ph ph-lock"></i>
                             <span>Ändra lösenord</span>
                         </a>
@@ -182,6 +195,19 @@
             }
             if (savedRole && uiRole) {
                 uiRole.textContent = savedRole === 'Admin' ? 'Administratör' : (savedRole === 'Teacher' ? 'Lärare' : 'Student');
+            }
+
+            // Dölj/visa specifika navbar-items baserat på roll för att matcha huvudsystemet
+            const navMinaKurser = document.getElementById('nav-mina-kurser');
+            const navSchema = document.getElementById('nav-schema');
+            const navAdmin = document.getElementById('nav-admin');
+
+            if (savedRole === 'Admin') {
+                if (navMinaKurser) navMinaKurser.style.display = 'none';
+                if (navSchema) navSchema.style.display = 'none';
+                if (navAdmin) navAdmin.style.display = 'block';
+            } else if (savedRole === 'Teacher') {
+                if (navAdmin) navAdmin.style.display = 'block';
             }
 
             const searchInput = document.getElementById('user-search-input');
