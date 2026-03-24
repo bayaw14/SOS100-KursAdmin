@@ -10,6 +10,23 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Länk till vår egen CSS-fil -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Enkel inloggningskontroll och token-hantering -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('t');
+        
+        if (token) {
+            localStorage.setItem('JwtToken', token);
+            // Rensar urlen från token
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        // Om ingen token finns, skicka till MVC Inloggning
+        if (!localStorage.getItem('JwtToken')) {
+            window.location.href = "http://localhost:5015/Inloggning/Index";
+        }
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -24,7 +41,7 @@
                 <ul class="nav-list">
                     <!-- Navigationslänkar -->
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="http://localhost:5015/" class="nav-link">
                             <i class="ph ph-house"></i>
                             <span>Dashboard</span>
                         </a>

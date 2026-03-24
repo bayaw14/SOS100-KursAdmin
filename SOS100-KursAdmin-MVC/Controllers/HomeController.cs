@@ -21,4 +21,15 @@ public class HomeController : Controller
 
         return View(model);
     }
+
+    [HttpGet]
+    public IActionResult Kommunikation()
+    {
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Index", "Inloggning");
+
+        // Omdirigera till den fristående frontend-appen för kommunikation
+        return Redirect($"http://localhost:5097/index.html?t={token}");
+    }
 }
