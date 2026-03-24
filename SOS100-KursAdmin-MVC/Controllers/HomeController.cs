@@ -29,7 +29,9 @@ public class HomeController : Controller
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Index", "Inloggning");
 
-        // Omdirigera till den fristående frontend-appen för kommunikation
-        return Redirect($"http://localhost:5097/index.html?t={token}");
+        var backUrl = $"{Request.Scheme}://{Request.Host}";
+
+        // Omdirigera till den fristående frontend-appen med token och back-url
+        return Redirect($"http://localhost:5097/index.html?t={token}&back={backUrl}");
     }
 }

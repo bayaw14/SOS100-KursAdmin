@@ -34,8 +34,10 @@ public class InloggningController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        if (User.Identity?.IsAuthenticated == true)
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
             return RedirectToAction("Index", "Home");
+            
         return View(new InloggningViewModel());
     }
 

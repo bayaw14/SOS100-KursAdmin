@@ -15,16 +15,35 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('t');
+        const backUrl = urlParams.get('back');
         
         if (token) {
             localStorage.setItem('JwtToken', token);
-            // Rensar urlen från token
+        }
+        if (backUrl) {
+            localStorage.setItem('MvcBaseUrl', backUrl);
+        }
+        
+        if (token || backUrl) {
+            // Rensar urlen från parametrar
             window.history.replaceState({}, document.title, window.location.pathname);
         }
         
+        const mvcBaseUrl = localStorage.getItem('MvcBaseUrl') || "http://localhost:5015";
+        
         // Om ingen token finns, skicka till MVC Inloggning
         if (!localStorage.getItem('JwtToken')) {
-            window.location.href = "http://localhost:5015/Inloggning/Index";
+            window.location.href = mvcBaseUrl + "/Inloggning/Index";
+        }
+
+        // Funktioner för att navigera tillbaka rätt
+        window.goBackToDashboard = function() {
+            window.location.href = mvcBaseUrl + "/";
+        }
+        
+        window.logoutFromCommunication = function() {
+            localStorage.removeItem('JwtToken');
+            window.location.href = mvcBaseUrl + "/Inloggning/Logout";
         }
     </script>
 </head>
@@ -32,16 +51,16 @@
     <div class="app-container">
         <!-- Vår snygga sidobar (Sidebar) börjar här -->
         <aside class="sidebar">
-            <div class="sidebar-header">
+            <a href="javascript:void(0);" onclick="goBackToDashboard()" class="sidebar-header" style="text-decoration: none;">
                 <i class="ph ph-graduation-cap logo-icon"></i>
                 <span class="logo-text">EduAdmin</span>
-            </div>
+            </a>
             
             <nav class="sidebar-nav">
                 <ul class="nav-list">
                     <!-- Navigationslänkar -->
                     <li class="nav-item">
-                        <a href="http://localhost:5015/" class="nav-link">
+                        <a href="javascript:void(0);" onclick="goBackToDashboard()" class="nav-link">
                             <i class="ph ph-house"></i>
                             <span>Dashboard</span>
                         </a>
@@ -89,7 +108,7 @@
                     </div>
                 </div>
                 <!-- Vår rödmarkerade utloggningsknapp -->
-                <a href="#" class="logout-btn">
+                <a href="javascript:void(0);" onclick="logoutFromCommunication()" class="logout-btn">
                     <i class="ph ph-sign-out"></i>
                     <span>Logga ut</span>
                 </a>
