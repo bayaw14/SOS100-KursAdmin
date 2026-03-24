@@ -86,12 +86,12 @@
                 <div class="chat-sidebar">
                     <div class="chat-header">
                         <h2>Kommunikation</h2>
-                        <button class="new-chat-btn">
+                        <button class="new-chat-btn" id="new-chat-btn">
                             <i class="ph ph-plus"></i>
                         </button>
                     </div>
                     
-                    <div class="search-container">
+                    <div class="search-container" id="search-container" style="display: none;">
                         <i class="ph ph-magnifying-glass"></i>
                         <input type="text" id="user-search-input" placeholder="Sök..." value="">
                     </div>
@@ -133,6 +133,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('user-search-input');
             const searchResultsSection = document.getElementById('search-results-section');
+            const newChatBtn = document.getElementById('new-chat-btn');
+            const searchContainer = document.getElementById('search-container');
+            
+            if (newChatBtn && searchContainer) {
+                newChatBtn.addEventListener('click', () => {
+                    if (searchContainer.style.display === 'none') {
+                        searchContainer.style.display = 'block';
+                        searchInput.focus();
+                    } else {
+                        searchContainer.style.display = 'none';
+                        searchInput.value = '';
+                        searchResultsSection.style.display = 'none';
+                    }
+                });
+            }
             
             // Lyssna på när användaren skriver i sökfältet
             searchInput.addEventListener('input', (e) => {
