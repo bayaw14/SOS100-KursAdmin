@@ -1,7 +1,7 @@
 /* Globala stylingregler */
 :root {
     /* Vårt grönaktiga tema från skissen */
-    --primary-color: #2e7d32; /* Mörkgrön, används för text och ikoner när aktiverad */
+    --primary-color: #2E7D4F; /* Grön färg hämtad från inloggningen */
     --primary-light: #e8f5e9; /* Ljusgrön, för den "glassiga" bakgrundseffekten */
     
     /* Text och bakgrunder */
@@ -42,8 +42,8 @@ body {
    ========================================= */
 .sidebar {
     width: 280px;
-    background-color: var(--bg-sidebar);
-    border-right: 1px solid var(--border-color);
+    background-color: var(--primary-color);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     padding: 30px 0;
@@ -58,7 +58,7 @@ body {
     align-items: center;
     padding: 0 32px;
     margin-bottom: 40px;
-    color: var(--primary-color);
+    color: #ffffff;
     gap: 12px;
 }
 
@@ -69,7 +69,7 @@ body {
 .logo-text {
     font-size: 22px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #ffffff;
 }
 
 /* Navigeringslänkar */
@@ -90,7 +90,7 @@ body {
     display: flex;
     align-items: center;
     padding: 14px 16px;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     border-radius: 12px; /* Rundare hörn ger ett modernare utseende */
     font-size: 15px;
@@ -106,18 +106,18 @@ body {
 
 /* Snygg hover-effekt för länkar som inte är aktiva */
 .nav-link:hover {
-    background-color: var(--bg-main);
-    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
 }
 
 .nav-link:hover i {
-    transform: scale(1.1); /* En liten detalj som gör mycket för känslan */
+    transform: scale(1.1); /* */
 }
 
 /* Stilen för vår just nu aktiva meny */
 .nav-item.active .nav-link {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
     font-weight: 600;
 }
 
@@ -137,8 +137,8 @@ body {
 .avatar {
     width: 44px;
     height: 44px;
-    background-color: #f0f4f8;
-    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -156,19 +156,19 @@ body {
 .user-name {
     font-weight: 600;
     font-size: 15px;
-    color: var(--text-main);
+    color: #ffffff;
 }
 
 .user-role {
     font-size: 13px;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .logout-btn {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: var(--danger);
+    color: #eb5757;
     text-decoration: none;
     font-weight: 500;
     font-size: 14px;

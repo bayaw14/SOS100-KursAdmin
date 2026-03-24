@@ -34,8 +34,10 @@ public class InloggningController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        if (User.Identity?.IsAuthenticated == true)
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
             return RedirectToAction("Index", "Home");
+            
         return View(new InloggningViewModel());
     }
 
@@ -61,7 +63,16 @@ public class InloggningController : Controller
 
         if (!response.IsSuccessStatusCode)
         {
-            ModelState.AddModelError("", "Fel e-post eller lösenord.");
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || 
+                response.StatusCode == System.Net.HttpStatusCode.BadRequest) 
+            {
+                ModelState.AddModelError("", "Fel e-post eller lösenord.");
+            }
+            else 
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError("", $"Ett internt API-fel uppstod ({(int)response.StatusCode}). API-adress: {client.BaseAddress}. Meddelande: {errorMsg}");
+            }
             return View(model);
         }
 

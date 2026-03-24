@@ -10,64 +10,105 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Länk till vår egen CSS-fil -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Enkel inloggningskontroll och token-hantering -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('t');
+        const backUrl = urlParams.get('back');
+        const userName = urlParams.get('name');
+        const userRole = urlParams.get('role');
+        
+        if (token) localStorage.setItem('JwtToken', token);
+        if (backUrl) localStorage.setItem('MvcBaseUrl', backUrl);
+        if (userName) localStorage.setItem('UserName', userName);
+        if (userRole) localStorage.setItem('UserRole', userRole);
+        
+        if (token || backUrl || userName || userRole) {
+            // Rensar urlen från parametrar
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        const mvcBaseUrl = localStorage.getItem('MvcBaseUrl') || "http://localhost:5015";
+        
+        // Om ingen token finns, skicka till MVC Inloggning
+        if (!localStorage.getItem('JwtToken')) {
+            window.location.href = mvcBaseUrl + "/Inloggning/Index";
+        }
+
+        // Funktioner för att navigera tillbaka rätt
+        window.goBackToDashboard = function() {
+            window.location.href = mvcBaseUrl + "/";
+        }
+        
+        window.logoutFromCommunication = function() {
+            localStorage.removeItem('JwtToken');
+            window.location.href = mvcBaseUrl + "/Inloggning/Logout";
+        }
+    </script>
 </head>
 <body>
     <div class="app-container">
         <!-- Vår snygga sidobar (Sidebar) börjar här -->
         <aside class="sidebar">
-            <div class="sidebar-header">
+            <a href="javascript:void(0);" onclick="goBackToDashboard()" class="sidebar-header" style="text-decoration: none;">
                 <i class="ph ph-graduation-cap logo-icon"></i>
                 <span class="logo-text">EduAdmin</span>
-            </div>
+            </a>
             
             <nav class="sidebar-nav">
                 <ul class="nav-list">
+                    <!-- Navigationslänkar -->
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="ph ph-squares-four"></i>
-                            <span>Översikt</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="ph ph-magnifying-glass"></i>
-                            <span>Kursutbud</span>
+                        <a href="javascript:void(0);" onclick="goBackToDashboard()" class="nav-link">
+                            <i class="ph ph-house"></i>
+                            <span>Dashboard</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="ph ph-book-open"></i>
-                            <span>Mina kurser</span>
+                            <span>Kursutbud</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="ph ph-calendar-blank"></i>
+                            <span>Mina kurser</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-clock"></i>
                             <span>Schema</span>
                         </a>
                     </li>
-                    <!-- Denna är aktiv och visar vår vackra gröna markeringsfärg -->
                     <li class="nav-item active">
                         <a href="#" class="nav-link">
                             <i class="ph ph-chat-circle"></i>
                             <span>Kommunikation</span>
                         </a>
                     </li>
-                   
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-lock"></i>
+                            <span>Ändra lösenord</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <!-- En liten snygg avatar -->
-                    <div class="avatar">A</div>
+                    <div class="avatar">M</div>
                     <div class="user-info">
-                        <span class="user-name">Admin</span>
-                        <span class="user-role">Admin</span>
+                        <span class="user-name">Maria Svensson</span>
+                        <span class="user-role">Student</span>
                     </div>
                 </div>
                 <!-- Vår rödmarkerade utloggningsknapp -->
-                <a href="#" class="logout-btn">
+                <a href="javascript:void(0);" onclick="logoutFromCommunication()" class="logout-btn">
                     <i class="ph ph-sign-out"></i>
                     <span>Logga ut</span>
                 </a>
@@ -81,12 +122,12 @@
                 <div class="chat-sidebar">
                     <div class="chat-header">
                         <h2>Kommunikation</h2>
-                        <button class="new-chat-btn">
+                        <button class="new-chat-btn" id="new-chat-btn">
                             <i class="ph ph-plus"></i>
                         </button>
                     </div>
                     
-                    <div class="search-container">
+                    <div class="search-container" id="search-container" style="display: none;">
                         <i class="ph ph-magnifying-glass"></i>
                         <input type="text" id="user-search-input" placeholder="Sök..." value="">
                     </div>
@@ -123,11 +164,43 @@
         </main>
     </div>
 
-    <!-- Skript för att hantera sökfältets beteende -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Hämta och visa sparad användarinformation i gränssnittet
+            const uiName = document.querySelector('.user-name');
+            const uiRole = document.querySelector('.user-role');
+            const uiAvatar = document.querySelector('.avatar');
+            
+            const savedName = localStorage.getItem('UserName');
+            const savedRole = localStorage.getItem('UserRole');
+            
+            if (savedName && uiName) {
+                uiName.textContent = savedName;
+                if (uiAvatar) {
+                    uiAvatar.textContent = savedName.charAt(0).toUpperCase();
+                }
+            }
+            if (savedRole && uiRole) {
+                uiRole.textContent = savedRole === 'Admin' ? 'Administratör' : (savedRole === 'Teacher' ? 'Lärare' : 'Student');
+            }
+
             const searchInput = document.getElementById('user-search-input');
             const searchResultsSection = document.getElementById('search-results-section');
+            const newChatBtn = document.getElementById('new-chat-btn');
+            const searchContainer = document.getElementById('search-container');
+            
+            if (newChatBtn && searchContainer) {
+                newChatBtn.addEventListener('click', () => {
+                    if (searchContainer.style.display === 'none') {
+                        searchContainer.style.display = 'block';
+                        searchInput.focus();
+                    } else {
+                        searchContainer.style.display = 'none';
+                        searchInput.value = '';
+                        searchResultsSection.style.display = 'none';
+                    }
+                });
+            }
             
             // Lyssna på när användaren skriver i sökfältet
             searchInput.addEventListener('input', (e) => {
