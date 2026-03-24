@@ -229,14 +229,47 @@
             }
             
             // Lyssna på när användaren skriver i sökfältet
-            searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', async (e) => {
                 const query = e.target.value.trim();
+                const resultsContainer = searchResultsSection.querySelector('.contact-list');
                 
-                // Om sökfältet har text (längre än 0), visa Sökresultat-sektionen. Annars dölj den.
                 if (query.length > 0) {
                     searchResultsSection.style.display = 'block';
+                    resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Söker...</div>';
+                    
+                    try {
+                        const response = await fetch('/api/Users/search?q=' + encodeURIComponent(query));
+                        if (response.ok) {
+                            const users = await response.json();
+                            if (users.length === 0) {
+                                resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Inga användare hittades.</div>';
+                            } else {
+                                resultsContainer.innerHTML = '';
+                                users.forEach(user => {
+                                    const initial = user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
+                                    const roleStr = user.role === 'Admin' ? 'Administratör' : (user.role === 'Teacher' ? 'Lärare' : 'Student');
+                                    const item = document.createElement('div');
+                                    item.className = 'contact-item';
+                                    item.innerHTML = `
+                                        <div class="contact-avatar light-green">${initial}</div>
+                                        <div class="contact-info">
+                                            <div class="contact-name">${user.firstName} ${user.lastName}</div>
+                                            <div class="contact-role">${roleStr} &bull; ${user.email}</div>
+                                        </div>
+                                    `;
+                                    item.addEventListener('click', () => {
+                                        alert('Startar chatt med ' + user.firstName + ' (Kommer i nästa steg)');
+                                    });
+                                    resultsContainer.appendChild(item);
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:red;">Kunde inte söka i databasen.</div>';
+                    }
                 } else {
                     searchResultsSection.style.display = 'none';
+                    resultsContainer.innerHTML = '';
                 }
             });
         });
