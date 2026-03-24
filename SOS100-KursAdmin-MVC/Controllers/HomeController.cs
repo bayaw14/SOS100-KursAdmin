@@ -5,6 +5,13 @@ namespace SOS100_KursAdmin_MVC.Controllers;
 
 public class HomeController : Controller
 {
+    private readonly IConfiguration _config;
+
+    public HomeController(IConfiguration config)
+    {
+        _config = config;
+    }
+
     // GET /Home
     public IActionResult Index()
     {
@@ -34,6 +41,7 @@ public class HomeController : Controller
         var role = HttpContext.Session.GetString("UserRole") ?? "Student";
 
         // Omdirigera till den fristående frontend-appen med token, profilinfo och back-url
-        return Redirect($"http://localhost:5097/index.html?t={token}&back={backUrl}&name={Uri.EscapeDataString(name)}&role={Uri.EscapeDataString(role)}");
+        var kommunikationUrl = _config["KommunikationAppUrl"] ?? "http://localhost:5097";
+        return Redirect($"{kommunikationUrl}/index.html?t={token}&back={backUrl}&name={Uri.EscapeDataString(name)}&role={Uri.EscapeDataString(role)}");
     }
 }
