@@ -16,15 +16,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('t');
         const backUrl = urlParams.get('back');
+        const userName = urlParams.get('name');
+        const userRole = urlParams.get('role');
         
-        if (token) {
-            localStorage.setItem('JwtToken', token);
-        }
-        if (backUrl) {
-            localStorage.setItem('MvcBaseUrl', backUrl);
-        }
+        if (token) localStorage.setItem('JwtToken', token);
+        if (backUrl) localStorage.setItem('MvcBaseUrl', backUrl);
+        if (userName) localStorage.setItem('UserName', userName);
+        if (userRole) localStorage.setItem('UserRole', userRole);
         
-        if (token || backUrl) {
+        if (token || backUrl || userName || userRole) {
             // Rensar urlen från parametrar
             window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -164,9 +164,26 @@
         </main>
     </div>
 
-    <!-- Skript för att hantera sökfältets beteende -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Hämta och visa sparad användarinformation i gränssnittet
+            const uiName = document.querySelector('.user-name');
+            const uiRole = document.querySelector('.user-role');
+            const uiAvatar = document.querySelector('.avatar');
+            
+            const savedName = localStorage.getItem('UserName');
+            const savedRole = localStorage.getItem('UserRole');
+            
+            if (savedName && uiName) {
+                uiName.textContent = savedName;
+                if (uiAvatar) {
+                    uiAvatar.textContent = savedName.charAt(0).toUpperCase();
+                }
+            }
+            if (savedRole && uiRole) {
+                uiRole.textContent = savedRole === 'Admin' ? 'Administratör' : (savedRole === 'Teacher' ? 'Lärare' : 'Student');
+            }
+
             const searchInput = document.getElementById('user-search-input');
             const searchResultsSection = document.getElementById('search-results-section');
             const newChatBtn = document.getElementById('new-chat-btn');

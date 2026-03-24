@@ -30,8 +30,10 @@ public class HomeController : Controller
             return RedirectToAction("Index", "Inloggning");
 
         var backUrl = $"{Request.Scheme}://{Request.Host}";
+        var name = HttpContext.Session.GetString("UserName") ?? "Okänd";
+        var role = HttpContext.Session.GetString("UserRole") ?? "Student";
 
-        // Omdirigera till den fristående frontend-appen med token och back-url
-        return Redirect($"http://localhost:5097/index.html?t={token}&back={backUrl}");
+        // Omdirigera till den fristående frontend-appen med token, profilinfo och back-url
+        return Redirect($"http://localhost:5097/index.html?t={token}&back={backUrl}&name={Uri.EscapeDataString(name)}&role={Uri.EscapeDataString(role)}");
     }
 }
