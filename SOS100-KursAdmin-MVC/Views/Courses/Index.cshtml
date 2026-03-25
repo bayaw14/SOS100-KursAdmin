@@ -4,94 +4,36 @@
     ViewData["Title"] = "Kursutbud";
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/courses.css" asp-append-version="true" />
-}
-
-<div class="courses-header">
-
-    <h2>Kursutbud</h2>
-
-    @if (Context.Session.GetString("UserRole") == "Admin")
-    {
-        <a asp-controller="Courses"
-           asp-action="Create"
-           class="create-course-btn">
-            + Skapa kurs
-        </a>
-    }
-
-</div>
-
-
 @if (ViewBag.Error != null)
 {
-    <div style="color:red; margin-bottom:20px;">
+    <div style="color: red; font-weight: bold; margin-bottom: 20px;">
         @ViewBag.Error
     </div>
 }
 
+<div class="courses-topbar">
+    <h1>Kursutbud</h1>
+    <a asp-controller="Courses" asp-action="Create" class="courses-create-btn">+ Skapa kurs</a>
+</div>
 
-@if (!Model.Any())
-{
-    <p>Inga kurser finns ännu.</p>
-}
-else
-{
-
-    <div class="courses-grid">
-
+<div class="courses-grid">
+    @if (Model != null && Model.Any())
+    {
         @foreach (var course in Model)
         {
-
-            <div class="course-card">
-
-                <span class="course-code">
-                    @course.CourseCode
-                </span>
-
+            <div class="courses-card">
+                <span class="courses-code">@course.CourseCode</span>
                 <h3>@course.Title</h3>
-
                 <p>@course.Description</p>
-
-                <div class="course-meta">
-                    Lärare: @course.TeacherName <br />
-                    Poäng: @course.Credits
-                </div>
-
-
-                @if (Context.Session.GetString("UserRole") == "Admin")
-                {
-
-                    <div class="course-actions">
-
-                        <a asp-action="Edit"
-                           asp-route-id="@course.Id"
-                           class="course-action-btn">
-                            Redigera
-                        </a>
-
-
-                        <form asp-action="Delete"
-                              asp-route-id="@course.Id"
-                              method="post"
-                              style="display:inline;">
-
-                            <button type="submit"
-                                    class="course-delete-btn">
-                                Ta bort
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                }
-
+                <div class="courses-meta">Lärare @course.TeacherName</div>
             </div>
-
         }
-
-    </div>
-
-}
+    }
+    else
+    {
+        <div class="courses-card">
+            <h3>Inga kurser ännu</h3>
+            <p>Det finns inga kurser att visa just nu.</p>
+        </div>
+    }
+</div>

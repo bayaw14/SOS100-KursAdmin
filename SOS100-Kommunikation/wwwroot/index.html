@@ -45,6 +45,14 @@
             localStorage.removeItem('JwtToken');
             window.location.href = mvcBaseUrl + "/Inloggning/Logout";
         }
+
+        window.goToAdministration = function() {
+            window.location.href = mvcBaseUrl + "/Inloggning/Users";
+        }
+        
+        window.goToChangePassword = function() {
+            window.location.href = mvcBaseUrl + "/Inloggning/ChangePassword";
+        }
     </script>
 </head>
 <body>
@@ -58,7 +66,6 @@
             
             <nav class="sidebar-nav">
                 <ul class="nav-list">
-                    <!-- Navigationslänkar -->
                     <li class="nav-item">
                         <a href="javascript:void(0);" onclick="goBackToDashboard()" class="nav-link">
                             <i class="ph ph-house"></i>
@@ -71,13 +78,13 @@
                             <span>Kursutbud</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="nav-mina-kurser">
                         <a href="#" class="nav-link">
                             <i class="ph ph-calendar-blank"></i>
                             <span>Mina kurser</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="nav-schema">
                         <a href="#" class="nav-link">
                             <i class="ph ph-clock"></i>
                             <span>Schema</span>
@@ -89,8 +96,14 @@
                             <span>Kommunikation</span>
                         </a>
                     </li>
+                    <li class="nav-item" id="nav-admin" style="display: none;">
+                        <a href="javascript:void(0);" onclick="goToAdministration()" class="nav-link">
+                            <i class="ph ph-users"></i>
+                            <span>Administration</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="javascript:void(0);" onclick="goToChangePassword()" class="nav-link">
                             <i class="ph ph-lock"></i>
                             <span>Ändra lösenord</span>
                         </a>
@@ -132,32 +145,82 @@
                         <input type="text" id="user-search-input" placeholder="Sök..." value="">
                     </div>
 
-                    <!-- Denna sektion är dold från början (display: none) -->
-                    <div class="contact-section" id="search-results-section" style="display: none;">
-                        <div class="section-title">Sökresultat</div>
-                        <div class="contact-list">
-                            <!-- Tomt initialt, fylls på dynamiskt via API -->
+                    <!-- Scrollbar container för listorna -->
+                    <div style="flex: 1; overflow-y: auto; min-height: 0;">
+                        <!-- Denna sektion är dold från början (display: none) -->
+                        <div class="contact-section" id="search-results-section" style="display: none;">
+                            <div class="section-title">Sökresultat</div>
+                            <div class="contact-list">
+                                <!-- Tomt initialt, fylls på dynamiskt via API -->
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="contact-section" style="margin-top: 20px;">
-                        <div class="section-title">
-                            <span>Direktmeddelanden</span>
-                        </div>
-                        <div class="contact-list">
-                            <!-- Tomt initialt, visas när chattar laddats från API -->
+                        <div class="contact-section" style="margin-top: 20px;">
+                            <div class="section-title">
+                                <span>Direktmeddelanden</span>
+                            </div>
+                            <div class="contact-list">
+                                <!-- Tomt initialt, visas när chattar laddats från API -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Högra panelen: Meddelanden -->
-                <div class="chat-window">
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); background-color: #fcfcfc;">
+                <div class="chat-window" id="chat-window-container">
+                    <div id="empty-chat-state" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); background-color: #fcfcfc;">
                         <div style="width: 80px; height: 80px; background-color: var(--primary-light); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
                             <i class="ph ph-chats" style="font-size: 40px;"></i>
                         </div>
                         <h3 style="color: var(--text-main); font-size: 18px; margin-bottom: 8px; font-weight: 600;">Dina meddelanden</h3>
                         <p style="font-size: 14px; text-align: center; max-width: 280px; color: var(--text-muted); line-height: 1.5;">Välj en konversation i listan eller sök efter en användare att chatta med.</p>
+                    </div>
+
+                    <!-- Skapa nytt meddelande (Visas när en användare valts) -->
+                    <div id="compose-message-state" style="display: none; flex: 1; flex-direction: column; background-color: #fff;">
+                        <div class="chat-header" style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; flex-direction: column;">
+                            <h2 id="compose-recipient-name" style="margin: 0; font-size: 18px;">Nytt meddelande</h2>
+                            <div style="font-size: 14px; color: #6b7280; margin-top: 4px;" id="compose-recipient-email"></div>
+                        </div>
+                        <div style="padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 20px; overflow-y: auto;">
+                            <!-- Ämne (Rubrik) -->
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                                <label for="message-subject" style="font-weight: 600; color: #374151; font-size: 14px;">Ämne</label>
+                                <input type="text" id="message-subject" placeholder="Infoga ämne" style="padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; transition: border-color 0.2s;">
+                            </div>
+                            <!-- Meddelande -->
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 200px;">
+                                <label for="message-content" style="font-weight: 600; color: #374151; font-size: 14px;">Meddelande *</label>
+                                <textarea id="message-content" style="padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; resize: none; flex: 1; font-family: inherit; transition: border-color 0.2s;"></textarea>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                                <button id="send-message-btn" style="background-color: var(--primary-color, #4f46e5); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background-color 0.2s;">
+                                    <i class="ph ph-paper-plane-right"></i>
+                                    Skicka
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Läs tråd (Visas när en kontakt valts) -->
+                    <div id="chat-thread-state" style="display: none; flex: 1; flex-direction: column; background-color: #fff; min-height: 0; overflow: hidden;">
+                        <div class="chat-header" style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; flex-direction: column; background-color: #fff; z-index: 10; flex-shrink: 0;">
+                            <h2 id="thread-recipient-name" style="margin: 0; font-size: 18px;">Chatt med ...</h2>
+                            <div style="font-size: 14px; color: #6b7280; margin-top: 4px;" id="thread-recipient-email"></div>
+                            <div id="thread-subject" style="display: none;"></div>
+                        </div>
+                        <div id="thread-messages-list" style="padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; background-color: #f9fafb; min-height: 0;">
+                            <!-- Meddelanden renderas här... -->
+                        </div>
+                        <div style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 10px; background-color: #fff; flex-shrink: 0;">
+                            <div style="display: flex; gap: 12px; align-items: flex-end;">
+                                <textarea id="reply-content" placeholder="Skriv ett meddelande..." style="padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; resize: none; flex: 1; height: 60px; font-family: inherit; transition: border-color 0.2s;"></textarea>
+                                <button id="send-reply-btn" style="background-color: var(--primary-color, #4f46e5); color: white; border: none; padding: 0 24px; border-radius: 6px; font-weight: 500; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; height: 60px; gap: 8px; transition: background-color 0.2s;">
+                                    <i class="ph ph-paper-plane-right"></i>
+                                    Skicka
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,6 +247,243 @@
                 uiRole.textContent = savedRole === 'Admin' ? 'Administratör' : (savedRole === 'Teacher' ? 'Lärare' : 'Student');
             }
 
+            // Funktion för att ladda och visa direkta chattkonversationer för den inloggade
+            async function loadDirectMessages() {
+                let currentUserEmail = 'user@example.com';
+                const token = localStorage.getItem('JwtToken');
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        currentUserEmail = payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || currentUserEmail;
+                    } catch(e) {}
+                }
+
+                try {
+                    const response = await fetch('/api/Messages/' + encodeURIComponent(currentUserEmail));
+                    if (response.ok) {
+                        const messages = await response.json();
+                        window.allMessages = messages; // Spara lokalt för tråden
+                        const contacts = new Map();
+
+                        messages.forEach(msg => {
+                            let isMeSender = (msg.senderEmail.toLowerCase() === currentUserEmail.toLowerCase());
+                            let contactEmail = isMeSender ? msg.receiverEmail : msg.senderEmail;
+                            // Om de skickat till oss har vi deras namn. Om vi skickat, använder vi mailen som fallback.
+                            let contactName = isMeSender ? contactEmail.split('@')[0] : (msg.senderFirstName + ' ' + msg.senderLastName);
+                            let subject = msg.subject || 'Utan ämne';
+                            let threadKey = contactEmail.toLowerCase() + "|" + subject.toLowerCase();
+                            
+                            contacts.set(threadKey, {
+                                email: contactEmail,
+                                name: contactName,
+                                subject: subject,
+                                lastMessageSubject: subject,
+                                isRead: msg.isRead
+                            });
+                        });
+
+                        // Tredje contact-section är direktmeddelanden
+                        const dmSections = document.querySelectorAll('.contact-section');
+                        const dmList = dmSections[1].querySelector('.contact-list');
+                        
+                        if (dmList) {
+                            dmList.innerHTML = '';
+                            if (contacts.size === 0) {
+                                dmList.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Inga meddelanden ännu.</div>';
+                            } else {
+                                contacts.forEach((contactData) => {
+                                    const initial = contactData.name.charAt(0).toUpperCase();
+                                    const item = document.createElement('div');
+                                    item.className = 'contact-item';
+                                    item.innerHTML = `
+                                        <div class="contact-avatar light-green">${initial}</div>
+                                        <div class="contact-info">
+                                            <div class="contact-name">${contactData.name}</div>
+                                            <div class="contact-role" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 140px;">
+                                                <i class="ph ph-chat-text" style="vertical-align: middle;"></i> ${contactData.lastMessageSubject || 'Utan ämne'}
+                                            </div>
+                                        </div>
+                                    `;
+                                    item.addEventListener('click', () => {
+                                        // Visa tråd
+                                        document.getElementById('empty-chat-state').style.display = 'none';
+                                        document.getElementById('compose-message-state').style.display = 'none';
+                                        document.getElementById('chat-thread-state').style.display = 'flex';
+                                        
+                                        document.getElementById('thread-recipient-name').textContent = contactData.name;
+                                        document.getElementById('thread-recipient-email').textContent = contactData.email;
+                                        document.getElementById('thread-recipient-email').dataset.email = contactData.email;
+                                        document.getElementById('thread-subject').textContent = contactData.subject ? `Ämne: ${contactData.subject}` : 'Ämne saknas';
+                                        
+                                        // Rensa inmatningsfält
+                                        document.getElementById('reply-content').value = '';
+
+                                        renderThread(contactData.email, contactData.subject);
+                                    });
+                                    dmList.appendChild(item);
+                                });
+                            }
+                        }
+                    }
+                } catch(err) {
+                    console.error("Kunde inte hämta direktmeddelanden", err);
+                }
+            }
+
+            // Ladda direktmeddelanden vid start
+            loadDirectMessages();
+
+            function renderThread(contactEmail, threadSubject = '') {
+                const threadList = document.getElementById('thread-messages-list');
+                if (!threadList || !window.allMessages) return;
+                
+                threadList.innerHTML = '';
+                
+                // Ta hit inloggad mail
+                let currentUserEmail = 'user@example.com';
+                const token = localStorage.getItem('JwtToken');
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        currentUserEmail = payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || currentUserEmail;
+                    } catch(e) {}
+                }
+                currentUserEmail = currentUserEmail.toLowerCase();
+                
+                const relevantMessages = window.allMessages.filter(m => 
+                    ((m.senderEmail.toLowerCase() === contactEmail.toLowerCase() && m.receiverEmail.toLowerCase() === currentUserEmail) || 
+                    (m.receiverEmail.toLowerCase() === contactEmail.toLowerCase() && m.senderEmail.toLowerCase() === currentUserEmail)) &&
+                    ((m.subject || 'Utan ämne').toLowerCase() === (threadSubject || 'Utan ämne').toLowerCase())
+                ).sort((a,b) => new Date(a.sentAt) - new Date(b.sentAt)); // Försäkra kronologisk ordning
+                
+                // Om vi vill kan vi sätta thread-subject från det absolut FÖRSTA meddelandet i denna tråd
+                if (relevantMessages.length > 0) {
+                    const firstSubj = relevantMessages[0].subject;
+                    document.getElementById('thread-subject').textContent = firstSubj ? `Ämne: ${firstSubj}` : 'Ämne saknas';
+                }
+
+                relevantMessages.forEach(msg => {
+                    let isMeSender = msg.senderEmail.toLowerCase() === currentUserEmail;
+                    
+                    const msgDiv = document.createElement('div');
+                    msgDiv.style.display = 'flex';
+                    msgDiv.style.flexDirection = 'column';
+                    msgDiv.style.maxWidth = '75%';
+                    msgDiv.style.padding = '10px 14px';
+                    msgDiv.style.borderRadius = '12px';
+                    msgDiv.style.marginBottom = '8px';
+                    
+                    const timeStr = new Date(msg.sentAt).toLocaleString('sv-SE', {hour: '2-digit', minute:'2-digit', weekday: 'short', month: 'short', day: 'numeric'});
+                    
+                    if (isMeSender) {
+                        msgDiv.style.alignSelf = 'flex-end';
+                        msgDiv.style.backgroundColor = 'var(--primary-color, #4f46e5)';
+                        msgDiv.style.color = '#fff';
+                        msgDiv.style.borderBottomRightRadius = '4px';
+                        msgDiv.innerHTML = `
+                            <div style="font-size: 14px; line-height: 1.4;">${msg.content}</div>
+                            <div style="font-size: 10px; opacity: 0.7; margin-top: 6px; text-align: right;">${timeStr}</div>
+                        `;
+                    } else {
+                        msgDiv.style.alignSelf = 'flex-start';
+                        msgDiv.style.backgroundColor = '#fff';
+                        msgDiv.style.border = '1px solid #e5e7eb';
+                        msgDiv.style.color = '#374151';
+                        msgDiv.style.borderBottomLeftRadius = '4px';
+                        msgDiv.innerHTML = `
+                            <div style="font-size: 14px; line-height: 1.4;">${msg.content}</div>
+                            <div style="font-size: 10px; color: #9ca3af; margin-top: 6px; text-align: left;">${timeStr}</div>
+                        `;
+                    }
+                    threadList.appendChild(msgDiv);
+                });
+                
+                // Scroll to bottom
+                threadList.scrollTop = threadList.scrollHeight;
+            }
+
+            // Logik för nytt meddelande i aktiv tråd ("skicka mer")
+            const sendReplyBtn = document.getElementById('send-reply-btn');
+            if(sendReplyBtn) {
+                sendReplyBtn.addEventListener('click', async () => {
+                    const recipientEmailObj = document.getElementById('thread-recipient-email');
+                    const recipientEmail = recipientEmailObj ? recipientEmailObj.dataset.email : null;
+                    const content = document.getElementById('reply-content').value.trim();
+                    
+                    if (!recipientEmail || !content) return; // Ignore if empty
+                    
+                    // Extrahera befintligt ämne för denna tråd så att servern inte gnäller, fastän vi inte visar den
+                    let threadSubject = "";
+                    const threadSubjectEl = document.getElementById('thread-subject');
+                    if (threadSubjectEl && threadSubjectEl.textContent.startsWith('Ämne: ')) {
+                        threadSubject = threadSubjectEl.textContent.replace('Ämne: ', '');
+                    }
+                    
+                    // Hämta inloggad användares namn och mejl
+                    const senderNameFull = localStorage.getItem('UserName') || 'Okänd';
+                    const nameParts = senderNameFull.split(' ');
+                    const firstName = nameParts[0];
+                    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Svensson';
+
+                    let senderEmail = 'user@example.com';
+                    const token = localStorage.getItem('JwtToken');
+                    if (token) {
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            senderEmail = payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || senderEmail;
+                        } catch(e) {}
+                    }
+
+                    const messageInfo = {
+                        senderEmail: senderEmail,
+                        senderFirstName: firstName,
+                        senderLastName: lastName,
+                        receiverEmail: recipientEmail,
+                        subject: threadSubject,
+                        content: content
+                    };
+
+                    try {
+                        sendReplyBtn.disabled = true;
+                        sendReplyBtn.innerHTML = '...';
+
+                        const response = await fetch('/api/Messages', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(messageInfo)
+                        });
+
+                        if (response.ok) {
+                            document.getElementById('reply-content').value = '';
+                            
+                            // Re-fetch everything silently and re-render thread
+                            await loadDirectMessages();
+                            renderThread(recipientEmail, threadSubject);
+                        } else {
+                            alert('Ett fel uppstod när ditt svar skulle skickas.');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        sendReplyBtn.disabled = false;
+                        sendReplyBtn.innerHTML = '<i class="ph ph-paper-plane-right"></i> Skicka';
+                    }
+                });
+            }
+
+            // Dölj/visa specifika navbar-items baserat på roll för att matcha huvudsystemet
+            const navMinaKurser = document.getElementById('nav-mina-kurser');
+            const navSchema = document.getElementById('nav-schema');
+            const navAdmin = document.getElementById('nav-admin');
+
+            if (savedRole === 'Admin') {
+                if (navMinaKurser) navMinaKurser.style.display = 'none';
+                if (navSchema) navSchema.style.display = 'none';
+                if (navAdmin) navAdmin.style.display = 'block';
+            } else if (savedRole === 'Teacher') {
+                if (navAdmin) navAdmin.style.display = 'block';
+            }
+
             const searchInput = document.getElementById('user-search-input');
             const searchResultsSection = document.getElementById('search-results-section');
             const newChatBtn = document.getElementById('new-chat-btn');
@@ -203,16 +503,162 @@
             }
             
             // Lyssna på när användaren skriver i sökfältet
-            searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', async (e) => {
                 const query = e.target.value.trim();
+                const resultsContainer = searchResultsSection.querySelector('.contact-list');
                 
-                // Om sökfältet har text (längre än 0), visa Sökresultat-sektionen. Annars dölj den.
                 if (query.length > 0) {
                     searchResultsSection.style.display = 'block';
+                    resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Söker...</div>';
+                    
+                    try {
+                        const response = await fetch('/api/Users/search?q=' + encodeURIComponent(query));
+                        if (response.ok) {
+                            const users = await response.json();
+                            if (users.length === 0) {
+                                resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Inga användare hittades.</div>';
+                            } else {
+                                resultsContainer.innerHTML = '';
+                                users.forEach(user => {
+                                    const initial = user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
+                                    const roleStr = user.role === 'Admin' ? 'Administratör' : (user.role === 'Teacher' ? 'Lärare' : 'Student');
+                                    const item = document.createElement('div');
+                                    item.className = 'contact-item';
+                                    item.innerHTML = `
+                                        <div class="contact-avatar light-green">${initial}</div>
+                                        <div class="contact-info">
+                                            <div class="contact-name">${user.firstName} ${user.lastName}</div>
+                                            <div class="contact-role">${roleStr} &bull; ${user.email}</div>
+                                        </div>
+                                    `;
+                                    item.addEventListener('click', () => {
+                                        // Update UI to show compose state (and hide others)
+                                        document.getElementById('empty-chat-state').style.display = 'none';
+                                        const threadState = document.getElementById('chat-thread-state');
+                                        if (threadState) threadState.style.display = 'none';
+                                        
+                                        const composeState = document.getElementById('compose-message-state');
+                                        if (composeState) {
+                                            composeState.style.display = 'flex';
+                                            document.getElementById('compose-recipient-name').textContent = 'Nytt meddelande till ' + user.firstName + ' ' + user.lastName;
+                                            document.getElementById('compose-recipient-email').textContent = user.email;
+                                            document.getElementById('compose-recipient-email').dataset.email = user.email; // Save email for later
+                                            document.getElementById('compose-recipient-email').dataset.name = user.firstName + ' ' + user.lastName; // Spara namn för senare
+                                            
+                                            // Focus subject
+                                            document.getElementById('message-subject').focus();
+                                        }
+                                    });
+                                    resultsContainer.appendChild(item);
+                                });
+                            }
+                        } else {
+                            const errObj = await response.json().catch(() => ({}));
+                            resultsContainer.innerHTML = `<div style="padding: 10px; font-size:12px; color:red;">Kunde inte söka i databasen: ${errObj.Error || response.statusText}</div>`;
+                        }
+                    } catch (err) {
+                        resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:red;">Kunde inte ansluta till databasen/nätverket.</div>';
+                    }
                 } else {
                     searchResultsSection.style.display = 'none';
+                    resultsContainer.innerHTML = '';
                 }
             });
+
+            // Logik för att skicka meddelande
+            const sendBtn = document.getElementById('send-message-btn');
+            if(sendBtn) {
+                sendBtn.addEventListener('click', async () => {
+                    const recipientEmailObj = document.getElementById('compose-recipient-email');
+                    const recipientEmail = recipientEmailObj ? recipientEmailObj.dataset.email : null;
+                    const recipientName = recipientEmailObj ? recipientEmailObj.dataset.name : 'Okänd användare';
+                    const subject = document.getElementById('message-subject').value.trim();
+                    const content = document.getElementById('message-content').value.trim();
+                    
+                    if (!recipientEmail) {
+                        alert('Ingen mottagare vald.');
+                        return;
+                    }
+
+                    if (!subject || !content) {
+                        alert('Vänligen fyll i både ämne och meddelande.');
+                        return;
+                    }
+
+                    // Hämta inloggad användares namn
+                    const senderNameFull = localStorage.getItem('UserName') || 'Okänd';
+                    const nameParts = senderNameFull.split(' ');
+                    const firstName = nameParts[0];
+                    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Svensson';
+
+                    // Försök hämta avsändarens e-post från JWT-token om möjligt, annars fallback
+                    let senderEmail = 'user@example.com';
+                    const token = localStorage.getItem('JwtToken');
+                    if (token) {
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            senderEmail = payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || senderEmail;
+                        } catch(e) {}
+                    }
+
+                    // Skapa meddelandeobjekt som matchar ChatMessage-modellen
+                    const messageInfo = {
+                        senderEmail: senderEmail,
+                        senderFirstName: firstName,
+                        senderLastName: lastName,
+                        receiverEmail: recipientEmail,
+                        subject: subject,
+                        content: content
+                    };
+
+                    try {
+                        sendBtn.disabled = true;
+                        sendBtn.innerHTML = 'Skickar...';
+
+                        const response = await fetch('/api/Messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(messageInfo)
+                        });
+
+                        if (response.ok) {
+                            // Återställ formuläret
+                            document.getElementById('message-subject').value = '';
+                            document.getElementById('message-content').value = '';
+                            
+                            // Dölj compose och sök, visa tråden
+                            document.getElementById('compose-message-state').style.display = 'none';
+                            document.getElementById('empty-chat-state').style.display = 'none';
+                            
+                            if(searchContainer) searchContainer.style.display = 'none';
+                            searchResultsSection.style.display = 'none';
+                            searchInput.value = '';
+                            
+                            // Uppdatera sidofältet med de nya meddelandena
+                            await loadDirectMessages();
+                            
+                            // Öppna direkt tråden så att användaren ser sitt nyskickade meddelande
+                            document.getElementById('chat-thread-state').style.display = 'flex';
+                            document.getElementById('thread-recipient-name').textContent = recipientName;
+                            document.getElementById('thread-recipient-email').textContent = recipientEmail;
+                            document.getElementById('thread-recipient-email').dataset.email = recipientEmail;
+                            document.getElementById('thread-subject').textContent = `Ämne: ${subject}`;
+                            
+                            renderThread(recipientEmail, subject);
+                        } else {
+                            alert('Ett fel uppstod när meddelandet skulle sparas i databasen.');
+                        }
+                    } catch (err) {
+                        alert('Ett serverfel uppstod vid försök att skicka meddelandet.');
+                        console.error(err);
+                    } finally {
+                        sendBtn.disabled = false;
+                        sendBtn.innerHTML = '<i class="ph ph-paper-plane-right"></i> Skicka';
+                    }
+                });
+            }
         });
     </script>
 </body>
