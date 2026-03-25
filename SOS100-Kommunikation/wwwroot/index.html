@@ -45,6 +45,14 @@
             localStorage.removeItem('JwtToken');
             window.location.href = mvcBaseUrl + "/Inloggning/Logout";
         }
+
+        window.goToAdministration = function() {
+            window.location.href = mvcBaseUrl + "/Inloggning/Users";
+        }
+        
+        window.goToChangePassword = function() {
+            window.location.href = mvcBaseUrl + "/Inloggning/ChangePassword";
+        }
     </script>
 </head>
 <body>
@@ -58,7 +66,6 @@
             
             <nav class="sidebar-nav">
                 <ul class="nav-list">
-                    <!-- Navigationslänkar -->
                     <li class="nav-item">
                         <a href="javascript:void(0);" onclick="goBackToDashboard()" class="nav-link">
                             <i class="ph ph-house"></i>
@@ -71,13 +78,13 @@
                             <span>Kursutbud</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="nav-mina-kurser">
                         <a href="#" class="nav-link">
                             <i class="ph ph-calendar-blank"></i>
                             <span>Mina kurser</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="nav-schema">
                         <a href="#" class="nav-link">
                             <i class="ph ph-clock"></i>
                             <span>Schema</span>
@@ -89,8 +96,14 @@
                             <span>Kommunikation</span>
                         </a>
                     </li>
+                    <li class="nav-item" id="nav-admin" style="display: none;">
+                        <a href="javascript:void(0);" onclick="goToAdministration()" class="nav-link">
+                            <i class="ph ph-users"></i>
+                            <span>Administration</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="javascript:void(0);" onclick="goToChangePassword()" class="nav-link">
                             <i class="ph ph-lock"></i>
                             <span>Ändra lösenord</span>
                         </a>
@@ -184,6 +197,19 @@
                 uiRole.textContent = savedRole === 'Admin' ? 'Administratör' : (savedRole === 'Teacher' ? 'Lärare' : 'Student');
             }
 
+            // Dölj/visa specifika navbar-items baserat på roll för att matcha huvudsystemet
+            const navMinaKurser = document.getElementById('nav-mina-kurser');
+            const navSchema = document.getElementById('nav-schema');
+            const navAdmin = document.getElementById('nav-admin');
+
+            if (savedRole === 'Admin') {
+                if (navMinaKurser) navMinaKurser.style.display = 'none';
+                if (navSchema) navSchema.style.display = 'none';
+                if (navAdmin) navAdmin.style.display = 'block';
+            } else if (savedRole === 'Teacher') {
+                if (navAdmin) navAdmin.style.display = 'block';
+            }
+
             const searchInput = document.getElementById('user-search-input');
             const searchResultsSection = document.getElementById('search-results-section');
             const newChatBtn = document.getElementById('new-chat-btn');
@@ -203,14 +229,47 @@
             }
             
             // Lyssna på när användaren skriver i sökfältet
-            searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', async (e) => {
                 const query = e.target.value.trim();
+                const resultsContainer = searchResultsSection.querySelector('.contact-list');
                 
-                // Om sökfältet har text (längre än 0), visa Sökresultat-sektionen. Annars dölj den.
                 if (query.length > 0) {
                     searchResultsSection.style.display = 'block';
+                    resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Söker...</div>';
+                    
+                    try {
+                        const response = await fetch('/api/Users/search?q=' + encodeURIComponent(query));
+                        if (response.ok) {
+                            const users = await response.json();
+                            if (users.length === 0) {
+                                resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:#888;">Inga användare hittades.</div>';
+                            } else {
+                                resultsContainer.innerHTML = '';
+                                users.forEach(user => {
+                                    const initial = user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
+                                    const roleStr = user.role === 'Admin' ? 'Administratör' : (user.role === 'Teacher' ? 'Lärare' : 'Student');
+                                    const item = document.createElement('div');
+                                    item.className = 'contact-item';
+                                    item.innerHTML = `
+                                        <div class="contact-avatar light-green">${initial}</div>
+                                        <div class="contact-info">
+                                            <div class="contact-name">${user.firstName} ${user.lastName}</div>
+                                            <div class="contact-role">${roleStr} &bull; ${user.email}</div>
+                                        </div>
+                                    `;
+                                    item.addEventListener('click', () => {
+                                        alert('Startar chatt med ' + user.firstName + ' (Kommer i nästa steg)');
+                                    });
+                                    resultsContainer.appendChild(item);
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:red;">Kunde inte söka i databasen.</div>';
+                    }
                 } else {
                     searchResultsSection.style.display = 'none';
+                    resultsContainer.innerHTML = '';
                 }
             });
         });
