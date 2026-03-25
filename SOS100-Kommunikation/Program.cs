@@ -5,7 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Lägg till Databas för meddelanden
 builder.Services.AddDbContext<CommunicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=../SOS100-Inloggning/kursadmin.db"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("CommunicationConnection") ?? "Data Source=kommunikation.db"));
+
+// Lägg till Databas för användare
+builder.Services.AddDbContext<AuthDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("AuthConnection") ?? "Data Source=../SOS100-Inloggning/kursadmin.db"));
 
 // Add services to the container.
 
