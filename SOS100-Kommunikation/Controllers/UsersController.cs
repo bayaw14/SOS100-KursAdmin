@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SOS100_Kommunikation.Data;
-using SOS100_Kommunikation.Models;
+using System.Text.Json;
+using SOS100_Kommunikation.Models; // User model here acts as DTO
 
 namespace SOS100_Kommunikation.Controllers;
 
@@ -9,11 +8,13 @@ namespace SOS100_Kommunikation.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly AuthDbContext _context;
+    private readonly IConfiguration _config;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public UsersController(AuthDbContext context)
+    public UsersController(IConfiguration config, IHttpClientFactory httpClientFactory)
     {
-        _context = context;
+        _config = config;
+        _httpClientFactory = httpClientFactory;
     }
 
     [HttpGet("search")]
@@ -26,21 +27,32 @@ public class UsersController : ControllerBase
 
         try
         {
-            var lowerQuery = q.ToLower();
-            var users = await _context.Users
-                .Where(u => u.FirstName.ToLower().Contains(lowerQuery) || 
-                            u.LastName.ToLower().Contains(lowerQuery) || 
-                            u.Email.ToLower().Contains(lowerQuery))
-                .ToListAsync();
-
-            return Ok(users);
+            var baseUrl = _config["AuthApiUrl"] ?? "https://app-sos100-inloggning.azurewebsites.net";
+            var apiKey = _config["AuthApiKey"] ?? "MIN_HEMLIGA_API_NYCKEL_12345";
+            
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+            
+            var url = $"{baseUrl.TrimEnd('/')}/api/auth/search-users?q={Uri.EscapeDataString(q)}";
+            
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var users = JsonSerializer.Deserialize<List<User>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return Ok(users ?? new List<User>());
+            }
+            else
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, new { Error = $"Inloggning-API returnerade fel: {err}" });
+            }
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { 
-                Message = "Ett databasfel uppstod när sökningen skulle göras (vanligt vid publicering om filen inte hittas).", 
-                Error = ex.Message,
-                DbConnection = _context.Database.GetDbConnection().ConnectionString
+                Message = "Kunde inte ansluta till Inloggning-API (Autentiseringsdatabasen).", 
+                Error = ex.Message
             });
         }
     }

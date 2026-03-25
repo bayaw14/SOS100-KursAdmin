@@ -36,6 +36,14 @@ public class AuthController : ControllerBase
         return Ok(users);
     }
 
+    // SÖK - API Key Only
+    [HttpGet("search-users")]
+    public IActionResult SearchUsers(string q)
+    {
+        var users = _authService.SearchUsers(q);
+        return Ok(users);
+    }
+
     // UPDATE
     [Authorize(Roles = "Admin")]
     [HttpPut("update-user/{id}")]

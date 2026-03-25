@@ -52,6 +52,25 @@ public class AuthService
             .ToList();
     }
 
+    public List<UserDTO> SearchUsers(string q)
+    {
+        if (string.IsNullOrWhiteSpace(q)) return new List<UserDTO>();
+        var lowerQuery = q.ToLower();
+        return _context.Users
+            .Where(u => u.FirstName.ToLower().Contains(lowerQuery) || 
+                        u.LastName.ToLower().Contains(lowerQuery) || 
+                        u.Email.ToLower().Contains(lowerQuery))
+            .Select(u => new UserDTO
+            {
+                Id           = u.Id,
+                FirstName    = u.FirstName,
+                LastName     = u.LastName,
+                Email        = u.Email,
+                Role         = u.Role
+            })
+            .ToList();
+    }
+
     // UPDATE
     public string? UpdateUser(Guid id, UpdateUserDTO dto)
     {

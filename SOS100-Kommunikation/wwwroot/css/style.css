@@ -557,3 +557,112 @@ body {
     margin-top: 12px;
     padding-left: 4px;
 }
+
+/* =========================================
+   Custom Modal (Bekräftelserutor)
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    animation: fadeIn 0.2s forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 380px; /* lite mindre i mitten som bilden */
+    border-radius: 24px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrerar allt */
+    text-align: center;
+    gap: 16px;
+    transform: scale(0.95);
+    animation: scaleUp 0.2s forwards ease-out;
+}
+
+@keyframes scaleUp {
+    to { transform: scale(1); }
+}
+
+.modal-icon-container {
+    width: 64px;
+    height: 64px;
+    background-color: #fef2f2; /* Ljus röd bakgrund */
+    color: #dc2626; /* Röd ikon */
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.modal-icon-container i {
+    font-size: 32px;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 20px;
+    color: #111827;
+    font-weight: 700;
+}
+
+.modal-text {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.modal-actions-centered {
+    display: flex;
+    width: 100%;
+    gap: 16px;
+}
+
+.modal-actions-centered button {
+    flex: 1; /* Båda knapparna delar 50/50 av utrymmet */
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel-light {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel-light:hover {
+    background: #e5e7eb;
+}
+
+.btn-danger-solid {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.btn-danger-solid:hover {
+    background: #b91c1c;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}

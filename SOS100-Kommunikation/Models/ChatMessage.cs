@@ -27,4 +27,10 @@ public class ChatMessage
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
     public bool IsRead { get; set; } = false;
+
+    // Håller koll på om avsändaren raderat meddelandet för sin egen vy
+    public bool DeletedBySender { get; set; } = false;
+
+    // Håller koll på om mottagaren raderat meddelandet för sin egen vy
+    public bool DeletedByReceiver { get; set; } = false;
 }
