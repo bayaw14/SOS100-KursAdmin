@@ -1,0 +1,47 @@
+@model SOS100_KursAdmin_MVC.Models.Course
+
+@{
+    ViewData["Title"] = "Skapa kurs";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/courses.css" asp-append-version="true" />
+}
+
+<h2>Skapa kurs</h2>
+
+<form asp-action="Create" method="post" class="course-form">
+    <label asp-for="CourseCode">Kurskod</label>
+    <input asp-for="CourseCode" />
+    <span asp-validation-for="CourseCode" class="text-danger"></span>
+
+    <label asp-for="Title">Titel</label>
+    <input asp-for="Title" />
+    <span asp-validation-for="Title" class="text-danger"></span>
+
+    <label asp-for="Description">Beskrivning</label>
+    <textarea asp-for="Description" rows="4"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+
+    <label asp-for="Credits">Poäng</label>
+    <input asp-for="Credits" type="number" step="0.5" />
+    <span asp-validation-for="Credits" class="text-danger"></span>
+
+    <label asp-for="TeacherName">Lärarnamn</label>
+    <input asp-for="TeacherName" />
+    <span asp-validation-for="TeacherName" class="text-danger"></span>
+
+    <label>
+        <input asp-for="IsForStaff" type="checkbox" />
+        Endast för personal
+    </label>
+
+    <div class="course-actions">
+        <button type="submit" class="create-course-btn">Spara kurs</button>
+        <a asp-action="Index" class="course-action-btn">Avbryt</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
