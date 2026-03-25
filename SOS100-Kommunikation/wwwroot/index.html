@@ -552,9 +552,12 @@
                                     resultsContainer.appendChild(item);
                                 });
                             }
+                        } else {
+                            const errObj = await response.json().catch(() => ({}));
+                            resultsContainer.innerHTML = `<div style="padding: 10px; font-size:12px; color:red;">Kunde inte söka i databasen: ${errObj.Error || response.statusText}</div>`;
                         }
                     } catch (err) {
-                        resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:red;">Kunde inte söka i databasen.</div>';
+                        resultsContainer.innerHTML = '<div style="padding: 10px; font-size:12px; color:red;">Kunde inte ansluta till databasen/nätverket.</div>';
                     }
                 } else {
                     searchResultsSection.style.display = 'none';
