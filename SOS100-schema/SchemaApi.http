@@ -1,0 +1,6 @@
+@SchemaApi_HostAddress = http://localhost:5237
+
+GET {{SchemaApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
