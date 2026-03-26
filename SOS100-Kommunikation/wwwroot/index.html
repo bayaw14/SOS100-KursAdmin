@@ -41,6 +41,10 @@
             window.location.href = mvcBaseUrl + "/";
         }
         
+        window.goToKursutbud = function() {
+            window.location.href = mvcBaseUrl + "/Courses";
+        }
+        
         window.logoutFromCommunication = function() {
             localStorage.removeItem('JwtToken');
             window.location.href = mvcBaseUrl + "/Inloggning/Logout";
@@ -73,7 +77,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="javascript:void(0);" onclick="goToKursutbud()" class="nav-link">
                             <i class="ph ph-book-open"></i>
                             <span>Kursutbud</span>
                         </a>
