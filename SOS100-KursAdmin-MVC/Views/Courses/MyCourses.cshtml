@@ -1,0 +1,85 @@
+@model List<SOS100_KursAdmin_MVC.Models.Course>
+
+@{
+    ViewData["Title"] = "Mina kurser";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/courses.css" asp-append-version="true" />
+}
+
+<div class="courses-header">
+    <h2>Mina kurser</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="course-alert course-alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="course-alert course-alert-error">
+        @TempData["Error"]
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="course-alert course-alert-error">
+        @ViewBag.Error
+    </div>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="course-empty-state">
+        <p>Du är inte anmäld till några kurser ännu.</p>
+
+        <a asp-controller="Courses"
+           asp-action="Index"
+           class="create-course-btn">
+            Gå till kursutbud
+        </a>
+    </div>
+}
+else
+{
+    <div class="courses-grid">
+        @foreach (var course in Model)
+        {
+            <div class="course-card">
+                <span class="course-code">@course.CourseCode</span>
+                <h3>@course.Title</h3>
+                <p>@course.Description</p>
+
+                <div class="course-meta">
+                    Lärare: @course.TeacherName <br />
+                    Poäng: @course.Credits
+
+                    @if (course.IsForStaff)
+                    {
+                        <br />
+                        <span class="course-staff-badge">Endast för personal</span>
+                    }
+                </div>
+
+                <div class="course-actions">
+                    <form asp-action="Unregister"
+                          asp-route-id="@course.Id"
+                          method="post"
+                          style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="course-delete-btn"
+                                onclick="return confirm('Vill du avregistrera dig från kursen?');">
+                            Avregistrera
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}

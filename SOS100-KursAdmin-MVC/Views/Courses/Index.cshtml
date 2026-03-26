@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Kursutbud";
+    var userRole = Context.Session.GetString("UserRole");
+    var registeredCourseIds = ViewBag.RegisteredCourseIds as List<int> ?? new List<int>();
 }
 
 @section Styles {
@@ -11,7 +13,7 @@
 <div class="courses-header">
     <h2>Kursutbud</h2>
 
-    @if (Context.Session.GetString("UserRole") == "Admin")
+    @if (userRole == "Admin" || userRole == "Teacher")
     {
         <a asp-controller="Courses"
            asp-action="Create"
@@ -21,9 +23,23 @@
     }
 </div>
 
+@if (TempData["Success"] != null)
+{
+    <div class="course-alert course-alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="course-alert course-alert-error">
+        @TempData["Error"]
+    </div>
+}
+
 @if (ViewBag.Error != null)
 {
-    <div style="color:red; margin-bottom:20px;">
+    <div class="course-alert course-alert-error">
         @ViewBag.Error
     </div>
 }
@@ -37,6 +53,8 @@ else
     <div class="courses-grid">
         @foreach (var course in Model)
         {
+            var isRegistered = registeredCourseIds.Contains(course.Id);
+
             <div class="course-card">
                 <span class="course-code">@course.CourseCode</span>
                 <h3>@course.Title</h3>
@@ -45,27 +63,61 @@ else
                 <div class="course-meta">
                     Lärare: @course.TeacherName <br />
                     Poäng: @course.Credits
+
+                    @if (course.IsForStaff)
+                    {
+                        <br />
+                        <span class="course-staff-badge">Endast för personal</span>
+                    }
                 </div>
 
-                @if (Context.Session.GetString("UserRole") == "Admin")
-                {
-                    <div class="course-actions">
+                <div class="course-actions">
+                    @if (userRole == "Student")
+                    {
+                        if (isRegistered)
+                        {
+                            <button type="button" class="course-registered-btn" disabled>
+                                Redan anmäld
+                            </button>
+                        }
+                        else
+                        {
+                            <form asp-action="Register"
+                                  asp-route-id="@course.Id"
+                                  method="post"
+                                  style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="create-course-btn">
+                                    Anmäl dig
+                                </button>
+                            </form>
+                        }
+                    }
+
+                    @if (userRole == "Teacher" || userRole == "Admin")
+                    {
                         <a asp-action="Edit"
                            asp-route-id="@course.Id"
                            class="course-action-btn">
                             Redigera
                         </a>
+                    }
 
+                    @if (userRole == "Admin")
+                    {
                         <form asp-action="Delete"
                               asp-route-id="@course.Id"
                               method="post"
                               style="display:inline;">
-                            <button type="submit" class="course-delete-btn">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="course-delete-btn"
+                                    onclick="return confirm('Är du säker på att du vill ta bort kursen?');">
                                 Ta bort
                             </button>
                         </form>
-                    </div>
-                }
+                    }
+                </div>
             </div>
         }
     </div>
