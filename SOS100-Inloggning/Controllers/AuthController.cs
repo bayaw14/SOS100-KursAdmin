@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using SOS100_Inloggning.DTOs;
 using SOS100_Inloggning.Services;
+using System.Security.Claims;
 
 namespace SOS100_Inloggning.Controllers;
 
@@ -70,42 +71,90 @@ public class AuthController : ControllerBase
     {
         var user = _authService.Login(dto);
         if (user == null) return Unauthorized("Invalid login");
+
         var token = _jwtService.GenerateToken(user);
+
         return Ok(new
         {
             token,
             role = user.Role,
-            name = $"{user.FirstName} {user.LastName}"
+            name = $"{user.FirstName} {user.LastName}",
+            userId = user.Id
         });
-        
     }
+
     // POST /api/auth/enroll
-    [Authorize]
+    [Authorize(Roles = "Student")]
     [HttpPost("enroll")]
     public IActionResult Enroll(EnrollDTO dto)
     {
-        var result = _authService.EnrollUser(dto);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized("User ID saknas i token.");
+
+        var userId = Guid.Parse(userIdClaim);
+
+        var result = _authService.EnrollUser(userId, dto);
+
+        if (result == "Already enrolled")
+            return BadRequest(result);
+
+        if (result == "User not found")
+            return NotFound(result);
+
         return Ok(result);
     }
 
-    // GET /api/auth/enrollments/{userId}
-    [Authorize]
-    [HttpGet("enrollments/{userId}")]
-    public IActionResult GetEnrollments(Guid userId)
+    // GET /api/auth/my-enrollments
+    [Authorize(Roles = "Student")]
+    [HttpGet("my-enrollments")]
+    public IActionResult GetMyEnrollments()
     {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized("User ID saknas i token.");
+
+        var userId = Guid.Parse(userIdClaim);
+
         var result = _authService.GetEnrollments(userId);
         return Ok(result);
     }
+
+    // DELETE /api/auth/unenroll/{courseId}
+    [Authorize(Roles = "Student")]
+    [HttpDelete("unenroll/{courseId}")]
+    public IActionResult Unenroll(int courseId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized("User ID saknas i token.");
+
+        var userId = Guid.Parse(userIdClaim);
+
+        var result = _authService.UnenrollUser(userId, courseId);
+        if (!result) return NotFound("Ingen registrering hittades.");
+
+        return Ok("Avregistrering lyckades.");
+    }
+
+    // GET /api/auth/course-enrollment-count/{courseId}
+    [Authorize(Roles = "Teacher,Admin")]
+    [HttpGet("course-enrollment-count/{courseId}")]
+    public IActionResult GetCourseEnrollmentCount(int courseId)
+    {
+        var count = _authService.GetEnrollmentCountForCourse(courseId);
+        return Ok(new { courseId, count });
+    }
+
     // POST /api/auth/change-password
     [Authorize]
     [HttpPost("change-password")]
     public IActionResult ChangePassword(ChangePasswordDTO dto)
     {
-        var email  = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
         var result = _authService.ChangePassword(email!, dto);
 
         if (result == null) return BadRequest("Fel nuvarande lösenord");
         return Ok(result);
-    }  
+    }
 }
-

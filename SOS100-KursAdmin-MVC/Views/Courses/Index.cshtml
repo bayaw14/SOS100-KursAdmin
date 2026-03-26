@@ -4,6 +4,7 @@
     ViewData["Title"] = "Kursutbud";
     var userRole = Context.Session.GetString("UserRole");
     var registeredCourseIds = ViewBag.RegisteredCourseIds as List<int> ?? new List<int>();
+    var enrollmentCounts = ViewBag.EnrollmentCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
 }
 
 @section Styles {
@@ -54,6 +55,7 @@ else
         @foreach (var course in Model)
         {
             var isRegistered = registeredCourseIds.Contains(course.Id);
+            var enrollmentCount = enrollmentCounts.ContainsKey(course.Id) ? enrollmentCounts[course.Id] : 0;
 
             <div class="course-card">
                 <span class="course-code">@course.CourseCode</span>
@@ -63,6 +65,12 @@ else
                 <div class="course-meta">
                     Lärare: @course.TeacherName <br />
                     Poäng: @course.Credits
+
+                    @if (userRole == "Teacher" || userRole == "Admin")
+                    {
+                        <br />
+                        <span class="course-enrollment-info">Anmälda studenter: @enrollmentCount</span>
+                    }
 
                     @if (course.IsForStaff)
                     {

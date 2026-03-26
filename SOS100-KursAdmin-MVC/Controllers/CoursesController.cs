@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using SOS100_KursAdmin_MVC.Models;
 
@@ -10,7 +9,6 @@ public class CoursesController : Controller
 {
     private readonly IHttpClientFactory _http;
     private readonly IConfiguration _config;
-    private const string RegisteredCoursesSessionKey = "RegisteredCourseIds";
 
     public CoursesController(IHttpClientFactory http, IConfiguration config)
     {
@@ -18,13 +16,39 @@ public class CoursesController : Controller
         _config = config;
     }
 
-    private HttpClient ApiClient()
+    private HttpClient CoursesApiClient()
     {
         var client = _http.CreateClient();
 
         var apiUrl = _config["KurserApiUrl"];
         if (string.IsNullOrWhiteSpace(apiUrl))
             throw new Exception("Konfigurationen 'KurserApiUrl' saknas i appsettings.");
+
+        client.BaseAddress = new Uri(apiUrl);
+
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var apiKey = _config["ApiKey"];
+        if (!string.IsNullOrWhiteSpace(apiKey))
+        {
+            client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
+        }
+
+        return client;
+    }
+
+    private HttpClient AuthApiClient()
+    {
+        var client = _http.CreateClient();
+
+        var apiUrl = _config["ApiBaseUrl"];
+        if (string.IsNullOrWhiteSpace(apiUrl))
+            throw new Exception("Konfigurationen 'ApiBaseUrl' saknas i appsettings.");
 
         client.BaseAddress = new Uri(apiUrl);
 
@@ -78,16 +102,36 @@ public class CoursesController : Controller
         return IsAdmin() || IsTeacher();
     }
 
-    private List<int> GetRegisteredCourseIds()
+    private class EnrollmentResponse
     {
-        var json = HttpContext.Session.GetString(RegisteredCoursesSessionKey);
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public int CourseId { get; set; }
+        public DateTime EnrolledAt { get; set; }
+    }
 
-        if (string.IsNullOrWhiteSpace(json))
-            return new List<int>();
+    private class EnrollmentCountResponse
+    {
+        public int CourseId { get; set; }
+        public int Count { get; set; }
+    }
 
+    private async Task<List<int>> GetMyEnrollmentCourseIdsAsync()
+    {
         try
         {
-            return JsonSerializer.Deserialize<List<int>>(json) ?? new List<int>();
+            if (!IsStudent())
+                return new List<int>();
+
+            var client = AuthApiClient();
+
+            var enrollments = await client.GetFromJsonAsync<List<EnrollmentResponse>>("api/auth/my-enrollments")
+                              ?? new List<EnrollmentResponse>();
+
+            return enrollments
+                .Select(e => e.CourseId)
+                .Distinct()
+                .ToList();
         }
         catch
         {
@@ -95,10 +139,31 @@ public class CoursesController : Controller
         }
     }
 
-    private void SaveRegisteredCourseIds(List<int> ids)
+    private async Task<Dictionary<int, int>> GetEnrollmentCountsAsync(List<Course> courses)
     {
-        var json = JsonSerializer.Serialize(ids);
-        HttpContext.Session.SetString(RegisteredCoursesSessionKey, json);
+        var result = new Dictionary<int, int>();
+
+        if (!IsTeacher() && !IsAdmin())
+            return result;
+
+        var client = AuthApiClient();
+
+        foreach (var course in courses)
+        {
+            try
+            {
+                var response = await client.GetFromJsonAsync<EnrollmentCountResponse>(
+                    $"api/auth/course-enrollment-count/{course.Id}");
+
+                result[course.Id] = response?.Count ?? 0;
+            }
+            catch
+            {
+                result[course.Id] = 0;
+            }
+        }
+
+        return result;
     }
 
     public async Task<IActionResult> Index()
@@ -109,12 +174,13 @@ public class CoursesController : Controller
 
         try
         {
-            var client = ApiClient();
+            var client = CoursesApiClient();
 
             var courses = await client.GetFromJsonAsync<List<Course>>("api/Courses")
                           ?? new List<Course>();
 
-            ViewBag.RegisteredCourseIds = GetRegisteredCourseIds();
+            ViewBag.RegisteredCourseIds = await GetMyEnrollmentCourseIdsAsync();
+            ViewBag.EnrollmentCounts = await GetEnrollmentCountsAsync(courses);
 
             return View(courses);
         }
@@ -122,6 +188,7 @@ public class CoursesController : Controller
         {
             ViewBag.Error = $"Kunde inte hämta kurser från API: {ex.Message}";
             ViewBag.RegisteredCourseIds = new List<int>();
+            ViewBag.EnrollmentCounts = new Dictionary<int, int>();
             return View(new List<Course>());
         }
     }
@@ -138,12 +205,11 @@ public class CoursesController : Controller
 
         try
         {
-            var client = ApiClient();
-
-            var allCourses = await client.GetFromJsonAsync<List<Course>>("api/Courses")
+            var coursesClient = CoursesApiClient();
+            var allCourses = await coursesClient.GetFromJsonAsync<List<Course>>("api/Courses")
                              ?? new List<Course>();
 
-            var registeredIds = GetRegisteredCourseIds();
+            var registeredIds = await GetMyEnrollmentCourseIdsAsync();
 
             var myCourses = allCourses
                 .Where(c => registeredIds.Contains(c.Id))
@@ -187,7 +253,7 @@ public class CoursesController : Controller
 
         try
         {
-            var client = ApiClient();
+            var client = CoursesApiClient();
             var response = await client.PostAsJsonAsync("api/Courses", course);
 
             if (response.IsSuccessStatusCode)
@@ -218,7 +284,7 @@ public class CoursesController : Controller
 
         try
         {
-            var client = ApiClient();
+            var client = CoursesApiClient();
             var course = await client.GetFromJsonAsync<Course>($"api/Courses/{id}");
 
             if (course == null)
@@ -249,7 +315,7 @@ public class CoursesController : Controller
 
         try
         {
-            var client = ApiClient();
+            var client = CoursesApiClient();
             var response = await client.PutAsJsonAsync($"api/Courses/{id}", course);
 
             if (response.IsSuccessStatusCode)
@@ -281,24 +347,13 @@ public class CoursesController : Controller
 
         try
         {
-            var client = ApiClient();
+            var client = CoursesApiClient();
             var response = await client.DeleteAsync($"api/Courses/{id}");
 
             if (response.IsSuccessStatusCode)
-            {
-                var registeredIds = GetRegisteredCourseIds();
-                if (registeredIds.Contains(id))
-                {
-                    registeredIds.Remove(id);
-                    SaveRegisteredCourseIds(registeredIds);
-                }
-
                 TempData["Success"] = "Kurs borttagen.";
-            }
             else
-            {
                 TempData["Error"] = "Kunde inte ta bort kurs.";
-            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -311,7 +366,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Register(int id)
+    public async Task<IActionResult> Register(int id)
     {
         var loginRedirect = RequireLogin();
         if (loginRedirect != null)
@@ -320,17 +375,26 @@ public class CoursesController : Controller
         if (!IsStudent())
             return RedirectToAction(nameof(Index));
 
-        var registeredIds = GetRegisteredCourseIds();
+        try
+        {
+            var client = AuthApiClient();
+            var response = await client.PostAsJsonAsync("api/auth/enroll", new { courseId = id });
 
-        if (!registeredIds.Contains(id))
-        {
-            registeredIds.Add(id);
-            SaveRegisteredCourseIds(registeredIds);
-            TempData["Success"] = "Du har anmält dig till kursen.";
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "Du har anmält dig till kursen.";
+            }
+            else
+            {
+                var message = await response.Content.ReadAsStringAsync();
+                TempData["Error"] = string.IsNullOrWhiteSpace(message)
+                    ? "Kunde inte anmäla dig till kursen."
+                    : message;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            TempData["Error"] = "Du är redan anmäld till kursen.";
+            TempData["Error"] = $"Fel vid kontakt med anmälnings-API: {ex.Message}";
         }
 
         return RedirectToAction(nameof(Index));
@@ -338,7 +402,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Unregister(int id)
+    public async Task<IActionResult> Unregister(int id)
     {
         var loginRedirect = RequireLogin();
         if (loginRedirect != null)
@@ -347,17 +411,26 @@ public class CoursesController : Controller
         if (!IsStudent())
             return RedirectToAction(nameof(Index));
 
-        var registeredIds = GetRegisteredCourseIds();
+        try
+        {
+            var client = AuthApiClient();
+            var response = await client.DeleteAsync($"api/auth/unenroll/{id}");
 
-        if (registeredIds.Contains(id))
-        {
-            registeredIds.Remove(id);
-            SaveRegisteredCourseIds(registeredIds);
-            TempData["Success"] = "Du har avregistrerat dig från kursen.";
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "Du har avregistrerat dig från kursen.";
+            }
+            else
+            {
+                var message = await response.Content.ReadAsStringAsync();
+                TempData["Error"] = string.IsNullOrWhiteSpace(message)
+                    ? "Kunde inte avregistrera dig från kursen."
+                    : message;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            TempData["Error"] = "Du är inte registrerad på kursen.";
+            TempData["Error"] = $"Fel vid kontakt med anmälnings-API: {ex.Message}";
         }
 
         return RedirectToAction(nameof(MyCourses));

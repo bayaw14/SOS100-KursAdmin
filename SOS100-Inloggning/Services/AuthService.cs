@@ -55,18 +55,20 @@ public class AuthService
     public List<UserDTO> SearchUsers(string q)
     {
         if (string.IsNullOrWhiteSpace(q)) return new List<UserDTO>();
+
         var lowerQuery = q.ToLower();
+
         return _context.Users
-            .Where(u => u.FirstName.ToLower().Contains(lowerQuery) || 
-                        u.LastName.ToLower().Contains(lowerQuery) || 
+            .Where(u => u.FirstName.ToLower().Contains(lowerQuery) ||
+                        u.LastName.ToLower().Contains(lowerQuery) ||
                         u.Email.ToLower().Contains(lowerQuery))
             .Select(u => new UserDTO
             {
-                Id           = u.Id,
-                FirstName    = u.FirstName,
-                LastName     = u.LastName,
-                Email        = u.Email,
-                Role         = u.Role
+                Id        = u.Id,
+                FirstName = u.FirstName,
+                LastName  = u.LastName,
+                Email     = u.Email,
+                Role      = u.Role
             })
             .ToList();
     }
@@ -81,11 +83,15 @@ public class AuthService
         if (!string.IsNullOrEmpty(dto.LastName))     user.LastName     = dto.LastName;
         if (!string.IsNullOrEmpty(dto.PersonNumber)) user.PersonNumber = dto.PersonNumber;
         if (!string.IsNullOrEmpty(dto.Email))        user.Email        = dto.Email;
+
         if (!string.IsNullOrEmpty(dto.Password))
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
         if (!string.IsNullOrEmpty(dto.Role) &&
             (dto.Role == "Teacher" || dto.Role == "Student" || dto.Role == "Admin"))
+        {
             user.Role = dto.Role;
+        }
 
         _context.SaveChanges();
         return $"{user.Email} updated successfully";
@@ -97,8 +103,15 @@ public class AuthService
         var user = _context.Users.FirstOrDefault(u => u.Id == id);
         if (user == null) return false;
 
+        var enrollments = _context.Enrollments.Where(e => e.UserId == id).ToList();
+        if (enrollments.Any())
+        {
+            _context.Enrollments.RemoveRange(enrollments);
+        }
+
         _context.Users.Remove(user);
         _context.SaveChanges();
+
         return true;
     }
 
@@ -113,19 +126,25 @@ public class AuthService
 
         return user;
     }
-    public string EnrollUser(EnrollDTO dto)
+
+    // ENROLL
+    public string EnrollUser(Guid userId, EnrollDTO dto)
     {
+        var userExists = _context.Users.Any(u => u.Id == userId);
+        if (!userExists) return "User not found";
+
         var exists = _context.Enrollments
-            .Any(e => e.UserId == dto.UserId && e.CourseId == dto.CourseId);
+            .Any(e => e.UserId == userId && e.CourseId == dto.CourseId);
 
         if (exists) return "Already enrolled";
 
         _context.Enrollments.Add(new Enrollment
         {
             Id       = Guid.NewGuid(),
-            UserId   = dto.UserId,
+            UserId   = userId,
             CourseId = dto.CourseId
         });
+
         _context.SaveChanges();
         return "Enrolled successfully";
     }
@@ -134,8 +153,28 @@ public class AuthService
     {
         return _context.Enrollments
             .Where(e => e.UserId == userId)
+            .OrderByDescending(e => e.EnrolledAt)
             .ToList();
     }
+
+    public bool UnenrollUser(Guid userId, int courseId)
+    {
+        var enrollment = _context.Enrollments
+            .FirstOrDefault(e => e.UserId == userId && e.CourseId == courseId);
+
+        if (enrollment == null) return false;
+
+        _context.Enrollments.Remove(enrollment);
+        _context.SaveChanges();
+
+        return true;
+    }
+
+    public int GetEnrollmentCountForCourse(int courseId)
+    {
+        return _context.Enrollments.Count(e => e.CourseId == courseId);
+    }
+
     public string? ChangePassword(string email, ChangePasswordDTO dto)
     {
         var user = _context.Users.FirstOrDefault(u => u.Email == email);
