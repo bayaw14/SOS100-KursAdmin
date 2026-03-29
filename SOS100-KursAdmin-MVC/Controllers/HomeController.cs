@@ -42,6 +42,6 @@ public class HomeController : Controller
 
         // Omdirigera till den fristående frontend-appen med token, profilinfo och back-url
         var kommunikationUrl = _config["KommunikationAppUrl"] ?? "http://localhost:5097";
-        return Redirect($"{kommunikationUrl}/index.html?t={token}&back={backUrl}&name={Uri.EscapeDataString(name)}&role={Uri.EscapeDataString(role)}");
+        return Redirect($"{kommunikationUrl}/?t={token}&back={backUrl}&name={Uri.EscapeDataString(name)}&role={Uri.EscapeDataString(role)}");
     }
 }
